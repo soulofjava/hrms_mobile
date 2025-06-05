@@ -11,6 +11,8 @@ const kBgColor = Color(0xFFFAFAFA);
 const kHalfDay = Color(0xFFE8B500);
 const kGreenColor = Color(0xFF08BC85);
 
+const String apiBaseUrl = 'https://api.aplikasimu.com/api/v1';
+
 final kTextStyle = GoogleFonts.manrope(
   color: kTitleColor,
 );
