@@ -1,8 +1,8 @@
-// ignore_for_file: use_super_parameters
+// ignore_for_file: use_super_parameters, deprecated_member_use
 
 import 'package:flutter/material.dart';
 import 'package:nb_utils/nb_utils.dart';
-import 'package:time_chart/time_chart.dart';
+// import 'package:time_chart/time_chart.dart';
 
 import '../../constant.dart';
 
@@ -71,10 +71,7 @@ class _AttendanceDetailsState extends State<AttendanceDetails> {
             onTap: () {
               Navigator.pop(context);
             },
-            child: const Icon(
-              Icons.close,
-              color: Colors.white,
-            ),
+            child: const Icon(Icons.close, color: Colors.white),
           ),
         ),
       ),
@@ -82,9 +79,7 @@ class _AttendanceDetailsState extends State<AttendanceDetails> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(
-              height: 20.0,
-            ),
+            const SizedBox(height: 20.0),
             Container(
               width: context.width(),
               padding: const EdgeInsets.all(20.0),
@@ -97,9 +92,7 @@ class _AttendanceDetailsState extends State<AttendanceDetails> {
               ),
               child: Column(
                 children: [
-                  const SizedBox(
-                    height: 20.0,
-                  ),
+                  const SizedBox(height: 20.0),
                   Container(
                     width: context.width(),
                     padding: const EdgeInsets.all(20),
@@ -111,10 +104,7 @@ class _AttendanceDetailsState extends State<AttendanceDetails> {
                       children: [
                         Row(
                           children: [
-                            Text(
-                              'Working Hours',
-                              style: kTextStyle,
-                            ),
+                            Text('Working Hours', style: kTextStyle),
                             const Spacer(),
                             RichText(
                               text: TextSpan(
@@ -136,33 +126,31 @@ class _AttendanceDetailsState extends State<AttendanceDetails> {
                             ),
                           ],
                         ),
-                        const SizedBox(
-                          height: 20.0,
-                        ),
+                        const SizedBox(height: 20.0),
                         Text(
                           '6 h 30 m',
-                          style: kTextStyle.copyWith(fontWeight: FontWeight.bold),
+                          style: kTextStyle.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         Text(
                           'Today',
                           style: kTextStyle.copyWith(color: kGreyTextColor),
                         ),
-                        const SizedBox(
-                          height: 20.0,
-                        ),
-                        TimeChart(
-                          data: data,
-                          chartType: ChartType.amount,
-                          viewMode: ViewMode.weekly,
-                          barColor: kMainColor,
-                          timeChartSizeAnimationDuration: const Duration(milliseconds: 200),
-                        ),
+                        const SizedBox(height: 20.0),
+                        // TimeChart(
+                        //   data: data,
+                        //   chartType: ChartType.amount,
+                        //   viewMode: ViewMode.weekly,
+                        //   barColor: kMainColor,
+                        //   timeChartSizeAnimationDuration: const Duration(
+                        //     milliseconds: 200,
+                        //   ),
+                        // ),
                       ],
                     ),
                   ),
-                  const SizedBox(
-                    height: 20.0,
-                  ),
+                  const SizedBox(height: 20.0),
                   Container(
                     width: context.width(),
                     padding: const EdgeInsets.all(20),
@@ -174,10 +162,7 @@ class _AttendanceDetailsState extends State<AttendanceDetails> {
                       children: [
                         Row(
                           children: [
-                            Text(
-                              'Attendance',
-                              style: kTextStyle,
-                            ),
+                            Text('Attendance', style: kTextStyle),
                             const Spacer(),
                             RichText(
                               text: TextSpan(
@@ -193,9 +178,7 @@ class _AttendanceDetailsState extends State<AttendanceDetails> {
                             ),
                           ],
                         ),
-                        const SizedBox(
-                          height: 20.0,
-                        ),
+                        const SizedBox(height: 20.0),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
@@ -203,25 +186,31 @@ class _AttendanceDetailsState extends State<AttendanceDetails> {
                               child: Padding(
                                 padding: const EdgeInsets.all(5.0),
                                 child: Container(
-                                  padding: const EdgeInsets.only(top: 10.0, bottom: 10.0, left: 10.0, right: 20.0),
+                                  padding: const EdgeInsets.only(
+                                    top: 10.0,
+                                    bottom: 10.0,
+                                    left: 10.0,
+                                    right: 20.0,
+                                  ),
                                   decoration: BoxDecoration(
                                     border: const Border(
-                                        top: BorderSide(
-                                      color: kMainColor,
-                                    )),
+                                      top: BorderSide(color: kMainColor),
+                                    ),
                                     color: kMainColor.withOpacity(0.1),
                                   ),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         '12',
-                                        style: kTextStyle.copyWith(color: kMainColor, fontSize: 18.0, fontWeight: FontWeight.bold),
+                                        style: kTextStyle.copyWith(
+                                          color: kMainColor,
+                                          fontSize: 18.0,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
-                                      Text(
-                                        'Present',
-                                        style: kTextStyle,
-                                      ),
+                                      Text('Present', style: kTextStyle),
                                     ],
                                   ),
                                 ),
@@ -231,25 +220,31 @@ class _AttendanceDetailsState extends State<AttendanceDetails> {
                               child: Padding(
                                 padding: const EdgeInsets.all(5.0),
                                 child: Container(
-                                  padding: const EdgeInsets.only(top: 10.0, bottom: 10.0, left: 10.0, right: 20.0),
+                                  padding: const EdgeInsets.only(
+                                    top: 10.0,
+                                    bottom: 10.0,
+                                    left: 10.0,
+                                    right: 20.0,
+                                  ),
                                   decoration: BoxDecoration(
                                     border: const Border(
-                                        top: BorderSide(
-                                      color: kAlertColor,
-                                    )),
+                                      top: BorderSide(color: kAlertColor),
+                                    ),
                                     color: kAlertColor.withOpacity(0.1),
                                   ),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         '1',
-                                        style: kTextStyle.copyWith(color: kAlertColor, fontSize: 18.0, fontWeight: FontWeight.bold),
+                                        style: kTextStyle.copyWith(
+                                          color: kAlertColor,
+                                          fontSize: 18.0,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
-                                      Text(
-                                        'Absent',
-                                        style: kTextStyle,
-                                      ),
+                                      Text('Absent', style: kTextStyle),
                                     ],
                                   ),
                                 ),
@@ -259,25 +254,33 @@ class _AttendanceDetailsState extends State<AttendanceDetails> {
                               child: Padding(
                                 padding: const EdgeInsets.all(5.0),
                                 child: Container(
-                                  padding: const EdgeInsets.only(top: 10.0, bottom: 10.0, left: 10.0, right: 20.0),
+                                  padding: const EdgeInsets.only(
+                                    top: 10.0,
+                                    bottom: 10.0,
+                                    left: 10.0,
+                                    right: 20.0,
+                                  ),
                                   decoration: BoxDecoration(
                                     border: const Border(
-                                        top: BorderSide(
-                                      color: Color(0xFF4CE364),
-                                    )),
-                                    color: const Color(0xFF4CE364).withOpacity(0.1),
+                                      top: BorderSide(color: Color(0xFF4CE364)),
+                                    ),
+                                    color: const Color(
+                                      0xFF4CE364,
+                                    ).withOpacity(0.1),
                                   ),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         '2',
-                                        style: kTextStyle.copyWith(color: const Color(0xFF4CE364), fontSize: 18.0, fontWeight: FontWeight.bold),
+                                        style: kTextStyle.copyWith(
+                                          color: const Color(0xFF4CE364),
+                                          fontSize: 18.0,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
-                                      Text(
-                                        'Holiday',
-                                        style: kTextStyle,
-                                      ),
+                                      Text('Holiday', style: kTextStyle),
                                     ],
                                   ),
                                 ),
@@ -285,9 +288,7 @@ class _AttendanceDetailsState extends State<AttendanceDetails> {
                             ),
                           ],
                         ),
-                        const SizedBox(
-                          height: 10.0,
-                        ),
+                        const SizedBox(height: 10.0),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
@@ -295,25 +296,31 @@ class _AttendanceDetailsState extends State<AttendanceDetails> {
                               child: Padding(
                                 padding: const EdgeInsets.all(5.0),
                                 child: Container(
-                                  padding: const EdgeInsets.only(top: 10.0, bottom: 10.0, left: 10.0, right: 20.0),
+                                  padding: const EdgeInsets.only(
+                                    top: 10.0,
+                                    bottom: 10.0,
+                                    left: 10.0,
+                                    right: 20.0,
+                                  ),
                                   decoration: BoxDecoration(
                                     border: const Border(
-                                        top: BorderSide(
-                                      color: kHalfDay,
-                                    )),
+                                      top: BorderSide(color: kHalfDay),
+                                    ),
                                     color: kHalfDay.withOpacity(0.1),
                                   ),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         '6',
-                                        style: kTextStyle.copyWith(color: kHalfDay, fontSize: 18.0, fontWeight: FontWeight.bold),
+                                        style: kTextStyle.copyWith(
+                                          color: kHalfDay,
+                                          fontSize: 18.0,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
-                                      Text(
-                                        'HalfDay',
-                                        style: kTextStyle,
-                                      ),
+                                      Text('HalfDay', style: kTextStyle),
                                     ],
                                   ),
                                 ),
@@ -323,25 +330,33 @@ class _AttendanceDetailsState extends State<AttendanceDetails> {
                               child: Padding(
                                 padding: const EdgeInsets.all(5.0),
                                 child: Container(
-                                  padding: const EdgeInsets.only(top: 10.0, bottom: 10.0, left: 10.0, right: 15.0),
+                                  padding: const EdgeInsets.only(
+                                    top: 10.0,
+                                    bottom: 10.0,
+                                    left: 10.0,
+                                    right: 15.0,
+                                  ),
                                   decoration: BoxDecoration(
                                     border: const Border(
-                                        top: BorderSide(
-                                      color: Color(0xFF806DF0),
-                                    )),
-                                    color: const Color(0xFF806DF0).withOpacity(0.1),
+                                      top: BorderSide(color: Color(0xFF806DF0)),
+                                    ),
+                                    color: const Color(
+                                      0xFF806DF0,
+                                    ).withOpacity(0.1),
                                   ),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         '1',
-                                        style: kTextStyle.copyWith(color: const Color(0xFF806DF0), fontSize: 18.0, fontWeight: FontWeight.bold),
+                                        style: kTextStyle.copyWith(
+                                          color: const Color(0xFF806DF0),
+                                          fontSize: 18.0,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
-                                      Text(
-                                        'WeekOff',
-                                        style: kTextStyle,
-                                      ),
+                                      Text('WeekOff', style: kTextStyle),
                                     ],
                                   ),
                                 ),
@@ -351,25 +366,33 @@ class _AttendanceDetailsState extends State<AttendanceDetails> {
                               child: Padding(
                                 padding: const EdgeInsets.all(5.0),
                                 child: Container(
-                                  padding: const EdgeInsets.only(top: 10.0, bottom: 10.0, left: 10.0, right: 15.0),
+                                  padding: const EdgeInsets.only(
+                                    top: 10.0,
+                                    bottom: 10.0,
+                                    left: 10.0,
+                                    right: 15.0,
+                                  ),
                                   decoration: BoxDecoration(
                                     border: const Border(
-                                        top: BorderSide(
-                                      color: Color(0xFF4ACDF9),
-                                    )),
-                                    color: const Color(0xFF4ACDF9).withOpacity(0.1),
+                                      top: BorderSide(color: Color(0xFF4ACDF9)),
+                                    ),
+                                    color: const Color(
+                                      0xFF4ACDF9,
+                                    ).withOpacity(0.1),
                                   ),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         '3',
-                                        style: kTextStyle.copyWith(color: const Color(0xFF4ACDF9), fontSize: 18.0, fontWeight: FontWeight.bold),
+                                        style: kTextStyle.copyWith(
+                                          color: const Color(0xFF4ACDF9),
+                                          fontSize: 18.0,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
-                                      Text(
-                                        'Leave',
-                                        style: kTextStyle,
-                                      ),
+                                      Text('Leave', style: kTextStyle),
                                     ],
                                   ),
                                 ),
@@ -380,9 +403,7 @@ class _AttendanceDetailsState extends State<AttendanceDetails> {
                       ],
                     ),
                   ),
-                  const SizedBox(
-                    height: 20.0,
-                  ),
+                  const SizedBox(height: 20.0),
                   Container(
                     width: context.width(),
                     padding: const EdgeInsets.all(20),
@@ -394,10 +415,7 @@ class _AttendanceDetailsState extends State<AttendanceDetails> {
                       children: [
                         Row(
                           children: [
-                            Text(
-                              'Basic Pay',
-                              style: kTextStyle,
-                            ),
+                            Text('Basic Pay', style: kTextStyle),
                             const Spacer(),
                             RichText(
                               text: TextSpan(
@@ -413,9 +431,7 @@ class _AttendanceDetailsState extends State<AttendanceDetails> {
                             ),
                           ],
                         ),
-                        const SizedBox(
-                          height: 20.0,
-                        ),
+                        const SizedBox(height: 20.0),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
@@ -424,19 +440,25 @@ class _AttendanceDetailsState extends State<AttendanceDetails> {
                                 Expanded(
                                   child: Text(
                                     'Loan',
-                                    style: kTextStyle.copyWith(fontWeight: FontWeight.bold),
+                                    style: kTextStyle.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
                                 Expanded(
                                   child: Text(
                                     'Extra Bonus',
-                                    style: kTextStyle.copyWith(fontWeight: FontWeight.bold),
+                                    style: kTextStyle.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
                                 Expanded(
                                   child: Text(
                                     'Total',
-                                    style: kTextStyle.copyWith(fontWeight: FontWeight.bold),
+                                    style: kTextStyle.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -445,27 +467,31 @@ class _AttendanceDetailsState extends State<AttendanceDetails> {
                               thickness: 1.0,
                               color: kGreyTextColor,
                             ),
-                            const SizedBox(
-                              height: 10.0,
-                            ),
+                            const SizedBox(height: 10.0),
                             Row(
                               children: [
                                 Expanded(
                                   child: Text(
                                     '\$0.00',
-                                    style: kTextStyle.copyWith(color: kGreyTextColor),
+                                    style: kTextStyle.copyWith(
+                                      color: kGreyTextColor,
+                                    ),
                                   ),
                                 ),
                                 Expanded(
                                   child: Text(
                                     '\$10.00',
-                                    style: kTextStyle.copyWith(color: kGreyTextColor),
+                                    style: kTextStyle.copyWith(
+                                      color: kGreyTextColor,
+                                    ),
                                   ),
                                 ),
                                 Expanded(
                                   child: Text(
                                     '\$20.00',
-                                    style: kTextStyle.copyWith(color: kGreyTextColor),
+                                    style: kTextStyle.copyWith(
+                                      color: kGreyTextColor,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -475,9 +501,7 @@ class _AttendanceDetailsState extends State<AttendanceDetails> {
                       ],
                     ),
                   ),
-                  const SizedBox(
-                    height: 20.0,
-                  ),
+                  const SizedBox(height: 20.0),
                   Row(
                     children: [
                       Expanded(
@@ -489,15 +513,17 @@ class _AttendanceDetailsState extends State<AttendanceDetails> {
                             color: kMainColor,
                           ),
                           child: Center(
-                              child: Text(
-                            'Delete',
-                            style: kTextStyle.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
-                          )),
+                            child: Text(
+                              'Delete',
+                              style: kTextStyle.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                      const SizedBox(
-                        width: 20.0,
-                      ),
+                      const SizedBox(width: 20.0),
                       Expanded(
                         child: Container(
                           height: 60.0,
@@ -507,10 +533,13 @@ class _AttendanceDetailsState extends State<AttendanceDetails> {
                             color: kMainColor.withOpacity(0.1),
                           ),
                           child: Center(
-                              child: Text(
-                            'Edit',
-                            style: kTextStyle.copyWith(fontWeight: FontWeight.bold),
-                          )),
+                            child: Text(
+                              'Edit',
+                              style: kTextStyle.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ],
