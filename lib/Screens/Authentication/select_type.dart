@@ -37,71 +37,77 @@ class _SelectTypeState extends State<SelectType> {
                   const Image(image: AssetImage("images/logo.png")),
                   const SizedBox(height: 100.0),
                   const Image(image: AssetImage("images/people.png")),
-                  Text(
-                    'Select Your Role',
-                    style: kTextStyle.copyWith(
-                      fontSize: 20.0,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  // Text(
+                  //   'Select Your Role',
+                  //   style: kTextStyle.copyWith(
+                  //     fontSize: 20.0,
+                  //     fontWeight: FontWeight.bold,
+                  //   ),
+                  // ),
                   Padding(
                     padding: const EdgeInsets.all(10.0),
                     child: Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(20.0),
                         border: Border.all(color: kMainColor),
-                        color: Colors.white,
+                        color: kMainColor,
                       ),
                       child: ListTile(
                         onTap: () {
                           const SignIn().launch(context);
                         },
-                        leading: const Image(
-                          image: AssetImage('images/owner.png'),
-                        ),
+                        // leading: const Image(
+                        //   image: AssetImage('images/owner.png'),
+                        // ),
                         title: Text(
-                          'Business Owner / Admin / HR',
-                          style: kTextStyle.copyWith(fontSize: 14.0),
-                        ),
-                        subtitle: Text(
-                          'Register your company & start attendance ',
+                          'Mulai',
+                          textAlign: TextAlign.center,
                           style: kTextStyle.copyWith(
-                            color: kGreyTextColor,
-                            fontSize: 12.0,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
                           ),
                         ),
+                        // Hapus atau comment out bagian subtitle jika tidak ingin menampilkan teks pendukung
+                        // subtitle: Text(
+                        //   'Register your company & start attendance',
+                        //   style: kTextStyle.copyWith(
+                        //     color: kGreyTextColor,
+                        //     fontSize: 12.0,
+                        //   ),
+                        // ),
                       ),
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.all(10.0),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20.0),
-                        border: Border.all(color: kGreyTextColor),
-                        color: Colors.white,
-                      ),
-                      child: ListTile(
-                        onTap: () {
-                          const SignIn().launch(context);
-                        },
-                        leading: const Image(
-                          image: AssetImage('images/employee.png'),
-                        ),
-                        title: Text(
-                          'Employee',
-                          style: kTextStyle.copyWith(fontSize: 14.0),
-                        ),
-                        subtitle: Text(
-                          'Register and start marking your attendance',
-                          style: kTextStyle.copyWith(
-                            color: kGreyTextColor,
-                            fontSize: 12.0,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+
+                  // Padding(
+                  //   padding: const EdgeInsets.all(10.0),
+                  //   child: Container(
+                  //     decoration: BoxDecoration(
+                  //       borderRadius: BorderRadius.circular(20.0),
+                  //       border: Border.all(color: kGreyTextColor),
+                  //       color: Colors.white,
+                  //     ),
+                  //     child: ListTile(
+                  //       onTap: () {
+                  //         const SignIn().launch(context);
+                  //       },
+                  //       leading: const Image(
+                  //         image: AssetImage('images/employee.png'),
+                  //       ),
+                  //       title: Text(
+                  //         'Employee',
+                  //         style: kTextStyle.copyWith(fontSize: 14.0),
+                  //       ),
+                  //       subtitle: Text(
+                  //         'Register and start marking your attendance',
+                  //         style: kTextStyle.copyWith(
+                  //           color: kGreyTextColor,
+                  //           fontSize: 12.0,
+                  //         ),
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
                 ],
               ),
             ),

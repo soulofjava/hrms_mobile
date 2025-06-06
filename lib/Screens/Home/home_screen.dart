@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hrms/Screens/Authentication/profile_screen.dart';
+import 'package:hrms/Screens/Authentication/sign_in.dart';
 import 'package:hrms/Screens/Client%20Management/empty_client_list.dart';
 import 'package:hrms/Screens/Employee%20management/management_screen.dart';
 import 'package:hrms/Screens/Expense%20Management/management_screen.dart';
@@ -46,9 +47,9 @@ class _HomeScreenState extends State<HomeScreen> {
           maxLines: 2,
           style: kTextStyle.copyWith(color: Colors.white, fontSize: 16.0),
         ),
-        actions: const [
-          Image(image: AssetImage('images/notificationicon.png')),
-        ],
+        // actions: const [
+        //   Image(image: AssetImage('images/notificationicon.png')),
+        // ],
       ),
       drawer: Drawer(
         child: ListView(
@@ -278,7 +279,9 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             ListTile(
-              onTap: () {},
+              onTap: () {
+                const SignIn().launch(context);
+              },
               leading: const Icon(
                 FontAwesomeIcons.signOutAlt,
                 color: kGreyTextColor,
@@ -462,15 +465,22 @@ class _HomeScreenState extends State<HomeScreen> {
                                 color: Colors.white,
                               ),
                               child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment
+                                    .center, // agar teks dan ikon berada di tengah kolom
                                 children: [
-                                  const Image(
-                                    image: AssetImage(
-                                      'images/filemanagement.png',
-                                    ),
+                                  // Atur ukuran ikon di sini
+                                  Image.asset(
+                                    'images/immigration_3125856.png',
+                                    width:
+                                        60, // sesuaikan nilai width jika ingin lebih kecil/besar
+                                    height:
+                                        60, // sesuaikan nilai height jika ingin lebih kecil/besar
                                   ),
+                                  const SizedBox(height: 8),
                                   Text(
-                                    ' Files Managements ',
+                                    'Presensi',
+                                    textAlign: TextAlign
+                                        .center, // memastikan teks rata tengah
                                     maxLines: 2,
                                     style: kTextStyle.copyWith(
                                       color: kTitleColor,

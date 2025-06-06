@@ -26,18 +26,21 @@ class _OnBoardState extends State<OnBoard> {
   List<Map<String, dynamic>> sliderList = [
     {
       "icon": 'images/onboard1.png',
-      "title": 'Keep healthy work-life balance',
-      "description": 'Lorem ipsum dolor sit amet, consectetuer adipisci elit, sed diam nonummy nibh euismod tincidunt u laoreet dolore magna aliquam erat volutpat. Ut wi',
+      "title": 'Jaga keseimbangan kerja dan kehidupan yang sehat',
+      "description":
+          'Pertahankan keseimbangan antara pekerjaan dan kehidupan pribadi untuk kesehatan yang optimal.',
     },
     {
       "icon": 'images/onboard2.png',
-      "title": 'Track your work & get result',
-      "description": 'Lorem ipsum dolor sit amet, consectetuer adipisci elit, sed diam nonummy nibh euismod tincidunt u laoreet dolore magna aliquam erat volutpat. Ut wi',
+      "title": 'Lacak pekerjaan Anda dan dapatkan hasil',
+      "description":
+          'Pantau progres pekerjaan secara real-time dan raih hasil terbaik.',
     },
     {
       "icon": 'images/onboard3.png',
-      "title": 'Stay organized with team',
-      "description": 'Lorem ipsum dolor sit amet, consectetuer adipisci elit, sed diam nonummy nibh euismod tincidunt u laoreet dolore magna aliquam erat volutpat. Ut wi',
+      "title": 'Tetap teratur bersama tim',
+      "description":
+          'Bangun koordinasi dengan tim agar pekerjaan menjadi lebih terstruktur dan efisien.',
     },
   ];
 
@@ -65,9 +68,7 @@ class _OnBoardState extends State<OnBoard> {
         backgroundColor: const Color(0xFFF0FDFF),
         elevation: 0.0,
         actions: [
-          const SizedBox(
-            width: 20.0,
-          ),
+          const SizedBox(width: 20.0),
           Padding(
             padding: const EdgeInsets.only(top: 8.0),
             child: TextButton(
@@ -75,17 +76,12 @@ class _OnBoardState extends State<OnBoard> {
                 const SignIn().launch(context);
               },
               child: Text(
-                'Skip',
-                style: GoogleFonts.dmSans(
-                  fontSize: 16.0,
-                  color: kTitleColor,
-                ),
+                'Lewati',
+                style: GoogleFonts.dmSans(fontSize: 16.0, color: kTitleColor),
               ),
             ),
           ),
-          const SizedBox(
-            width: 30.0,
-          )
+          const SizedBox(width: 30.0),
         ],
       ),
       body: Column(
@@ -135,13 +131,21 @@ class _OnBoardState extends State<OnBoard> {
                           Expanded(
                             child: Container(
                               decoration: const BoxDecoration(
-                                borderRadius: BorderRadius.only(topLeft: Radius.circular(30.0), topRight: Radius.circular(30.0)),
+                                borderRadius: BorderRadius.only(
+                                  topLeft: Radius.circular(30.0),
+                                  topRight: Radius.circular(30.0),
+                                ),
                                 color: Colors.white,
                               ),
                               child: Column(
                                 children: [
                                   Padding(
-                                    padding: const EdgeInsets.only(left: 20.0, right: 30.0, top: 15.0, bottom: 15.0),
+                                    padding: const EdgeInsets.only(
+                                      left: 20.0,
+                                      right: 30.0,
+                                      top: 15.0,
+                                      bottom: 15.0,
+                                    ),
                                     child: Text(
                                       sliderList[index]['title'].toString(),
                                       textAlign: TextAlign.start,
@@ -153,12 +157,16 @@ class _OnBoardState extends State<OnBoard> {
                                     ),
                                   ),
                                   Padding(
-                                    padding: const EdgeInsets.only(left: 30.0, right: 20.0),
+                                    padding: const EdgeInsets.only(
+                                      left: 30.0,
+                                      right: 20.0,
+                                    ),
                                     // ignore: sized_box_for_whitespace
                                     child: Container(
                                       width: context.width(),
                                       child: Text(
-                                        sliderList[index]['description'].toString(),
+                                        sliderList[index]['description']
+                                            .toString(),
                                         textAlign: TextAlign.start,
                                         overflow: TextOverflow.ellipsis,
                                         maxLines: 5,
@@ -204,10 +212,18 @@ class _OnBoardState extends State<OnBoard> {
                             onTap: () {
                               setState(() {
                                 currentIndexPage < 2
-                                    ? pageController.nextPage(duration: const Duration(microseconds: 3000), curve: Curves.bounceInOut)
+                                    ? pageController.nextPage(
+                                        duration: const Duration(
+                                          microseconds: 3000,
+                                        ),
+                                        curve: Curves.bounceInOut,
+                                      )
                                     : Navigator.push(
                                         context,
-                                        MaterialPageRoute(builder: (context) => const SelectType()),
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              const SelectType(),
+                                        ),
                                       );
                               });
                             },

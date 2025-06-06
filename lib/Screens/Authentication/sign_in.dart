@@ -56,7 +56,7 @@ class _SignInState extends State<SignIn> {
 
         // Show success toast
         Fluttertoast.showToast(
-          msg: "Login successful",
+          msg: "Login berhasil",
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.BOTTOM,
           backgroundColor: Colors.green,
@@ -69,7 +69,7 @@ class _SignInState extends State<SignIn> {
         // Login failed
         final errorData = json.decode(response.body);
         Fluttertoast.showToast(
-          msg: errorData['message'] ?? "Login failed",
+          msg: errorData['message'] ?? "Login gagal",
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.BOTTOM,
           backgroundColor: Colors.red,
@@ -79,7 +79,7 @@ class _SignInState extends State<SignIn> {
     } catch (e) {
       // Network or other error
       Fluttertoast.showToast(
-        msg: "An error occurred: ${e.toString()}",
+        msg: "Terjadi kesalahan: ${e.toString()}",
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.BOTTOM,
         backgroundColor: Colors.red,
@@ -102,7 +102,7 @@ class _SignInState extends State<SignIn> {
         elevation: 0.0,
         iconTheme: const IconThemeData(color: Colors.white),
         title: Text(
-          'Sign In',
+          'Masuk',
           style: kTextStyle.copyWith(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -115,7 +115,7 @@ class _SignInState extends State<SignIn> {
           Padding(
             padding: const EdgeInsets.all(20.0),
             child: Text(
-              'Sign In now to begin an amazing journey',
+              'Masuk sekarang untuk memulai perjalanan luar biasa',
               style: kTextStyle.copyWith(color: Colors.white),
             ),
           ),
@@ -140,7 +140,7 @@ class _SignInState extends State<SignIn> {
                       enabled: true,
                       decoration: InputDecoration(
                         labelText: 'Email',
-                        hintText: 'example@email.com',
+                        hintText: 'contoh@email.com',
                         labelStyle: kTextStyle,
                         floatingLabelBehavior: FloatingLabelBehavior.never,
                         border: const OutlineInputBorder(),
@@ -153,9 +153,9 @@ class _SignInState extends State<SignIn> {
                     controller: passwordController,
                     obscureText: obscurePassword,
                     decoration: InputDecoration(
-                      labelText: 'Password',
+                      labelText: 'Kata Sandi',
                       labelStyle: kTextStyle,
-                      hintText: 'Enter password',
+                      hintText: 'Masukkan kata sandi',
                       border: const OutlineInputBorder(),
                       suffixIcon: IconButton(
                         icon: Icon(
@@ -189,7 +189,7 @@ class _SignInState extends State<SignIn> {
                       // ),
                       // Text('Save Me', style: kTextStyle),
                       const Spacer(),
-                      Text('Forgot Password?', style: kTextStyle).onTap(() {
+                      Text('Lupa Kata Sandi?', style: kTextStyle).onTap(() {
                         const ForgotPassword().launch(context);
                       }),
                     ],
@@ -198,7 +198,7 @@ class _SignInState extends State<SignIn> {
                   isLoading
                       ? const CircularProgressIndicator(color: kMainColor)
                       : ButtonGlobal(
-                          buttontext: 'Sign In',
+                          buttontext: 'Masuk',
                           buttonDecoration: kButtonDecoration.copyWith(
                             color: kMainColor,
                           ),
@@ -206,21 +206,21 @@ class _SignInState extends State<SignIn> {
                             // Validate inputs
                             if (emailController.text.isEmpty) {
                               Fluttertoast.showToast(
-                                msg: "Please enter your email",
+                                msg: "Silakan masukkan email Anda",
                                 backgroundColor: Colors.red,
                               );
                               return;
                             }
                             if (!emailController.text.contains('@')) {
                               Fluttertoast.showToast(
-                                msg: "Please enter a valid email",
+                                msg: "Silakan masukkan email yang valid",
                                 backgroundColor: Colors.red,
                               );
                               return;
                             }
                             if (passwordController.text.isEmpty) {
                               Fluttertoast.showToast(
-                                msg: "Please enter your password",
+                                msg: "Silakan masukkan kata sandi Anda",
                                 backgroundColor: Colors.red,
                               );
                               return;
@@ -235,13 +235,13 @@ class _SignInState extends State<SignIn> {
                     text: TextSpan(
                       children: [
                         TextSpan(
-                          text: 'Don\'t have an account? ',
+                          text: 'Belum punya akun? ',
                           style: kTextStyle.copyWith(color: kGreyTextColor),
                         ),
                         WidgetSpan(
                           child:
                               Text(
-                                'Sign Up',
+                                'Daftar',
                                 style: kTextStyle.copyWith(
                                   fontWeight: FontWeight.bold,
                                   color: kMainColor,
