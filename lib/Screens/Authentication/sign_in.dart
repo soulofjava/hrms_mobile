@@ -28,13 +28,13 @@ class _SignInState extends State<SignIn> {
 
   // Function to handle API sign in
   Future<void> signInWithApi() async {
-    setState(() {
-      isLoading = true;
-    });
-
+    print('sampai disini 1');
     try {
+      if (!mounted) return;
+      setState(() => isLoading = true);
+      print('sampai disini 2');
       // Replace with your actual API endpoint
-      final url = Uri.parse('$apiBaseUrl/auth/login');
+      final url = Uri.parse('$apiBaseUrl/login');
 
       // Prepare the request body
       final response = await http.post(

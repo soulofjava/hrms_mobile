@@ -11,16 +11,12 @@ const kBgColor = Color(0xFFFAFAFA);
 const kHalfDay = Color(0xFFE8B500);
 const kGreenColor = Color(0xFF08BC85);
 
-const String apiBaseUrl = 'https://api.aplikasimu.com/api/v1';
+const String apiBaseUrl = 'http://192.168.18.127:8000/api';
 
-final kTextStyle = GoogleFonts.manrope(
-  color: kTitleColor,
-);
+final kTextStyle = GoogleFonts.manrope(color: kTitleColor);
 String purchaseCode = '528cdb9a-5d37-4292-a2b5-b792d5eca03a';
 const kButtonDecoration = BoxDecoration(
-  borderRadius: BorderRadius.all(
-    Radius.circular(5),
-  ),
+  borderRadius: BorderRadius.all(Radius.circular(5)),
 );
 
 const kInputDecoration = InputDecoration(
@@ -65,14 +61,14 @@ List<String> employees = [
 ];
 List<String> designations = ['Designer', 'Manager', 'Developer', 'Officer'];
 
-List<String> employeeType = [
-  'Full Time',
-  'Part Time',
-  'Freelance',
-  'Remote',
-];
+List<String> employeeType = ['Full Time', 'Part Time', 'Freelance', 'Remote'];
 
-List<String> employeeName = ['Sahidul Islam', 'Ibne Riead', 'Mehedi Muhammad', 'Emily Jones'];
+List<String> employeeName = [
+  'Sahidul Islam',
+  'Ibne Riead',
+  'Mehedi Muhammad',
+  'Emily Jones',
+];
 
 List<String> genderList = ['Male', 'Female'];
 
@@ -83,13 +79,5 @@ List<String> expensePurpose = [
   'Transfer',
   'Sales',
 ];
-List<String> posStats = [
-  'Daily',
-  'Monthly',
-  'Yearly',
-];
-List<String> saleStats = [
-  'Weekly',
-  'Monthly',
-  'Yearly',
-];
+List<String> posStats = ['Daily', 'Monthly', 'Yearly'];
+List<String> saleStats = ['Weekly', 'Monthly', 'Yearly'];

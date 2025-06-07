@@ -56,8 +56,13 @@ class _CameraScreenState extends State<CameraScreen> {
       orElse: () => widget.cameras.first,
     );
 
-    // Initialize the controller
-    _controller = CameraController(camera, ResolutionPreset.medium);
+    // Initialize the controller with high resolution
+    _controller = CameraController(
+      camera,
+      ResolutionPreset.high, // Using high resolution instead of medium
+      enableAudio: false, // Audio not needed for selfies
+      imageFormatGroup: ImageFormatGroup.jpeg,
+    );
 
     // Initialize the controller. This returns a Future.
     _initializeControllerFuture = _controller.initialize();
@@ -193,7 +198,13 @@ class _CameraScreenState extends State<CameraScreen> {
               children: [
                 Column(
                   children: [
-                    Expanded(child: CameraPreview(_controller)),
+                    // Using AspectRatio to maintain proper camera aspect ratio
+                    Expanded(
+                      child: AspectRatio(
+                        aspectRatio: _controller.value.aspectRatio,
+                        child: CameraPreview(_controller),
+                      ),
+                    ),
                     Container(
                       height: 100,
                       color: Colors.black,
