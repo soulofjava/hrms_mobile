@@ -1,5 +1,6 @@
 // ignore_for_file: deprecated_member_use, use_super_parameters
 
+import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -36,6 +37,47 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   bool isChecked = false;
   bool isLoggingOut = false;
+  String userName = 'User';
+  String userEmail = 'user@example.com';
+  String userRole = '';
+
+  @override
+  void initState() {
+    super.initState();
+    loadUserData();
+  }
+
+  // Load user data from SharedPreferences
+  Future<void> loadUserData() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userJson = prefs.getString('user');
+      final roles = prefs.getString('roles');
+
+      if (userJson != null && userJson.isNotEmpty) {
+        final userData = jsonDecode(userJson);
+        setState(() {
+          userName = userData['name'] ?? 'User';
+          userEmail = userData['email'] ?? 'user@example.com';
+        });
+
+        print('Loaded user data: $userData');
+      }
+
+      if (roles != null && roles.isNotEmpty) {
+        final rolesList = jsonDecode(roles);
+        if (rolesList is List && rolesList.isNotEmpty) {
+          setState(() {
+            userRole = rolesList[0].toString();
+          });
+        }
+
+        print('Loaded roles: $rolesList');
+      }
+    } catch (e) {
+      print('Error loading user data: $e');
+    }
+  }
 
   // Function to handle logout
   Future<void> logoutUser() async {
@@ -47,11 +89,11 @@ class _HomeScreenState extends State<HomeScreen> {
       // Get the access token from SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       final accessToken = prefs.getString('access_token');
-      
+
       if (accessToken == null || accessToken.isEmpty) {
         // If no token is found, just clear preferences and navigate to login
         await prefs.clear();
-        
+
         Fluttertoast.showToast(
           msg: "Berhasil keluar",
           toastLength: Toast.LENGTH_SHORT,
@@ -59,14 +101,14 @@ class _HomeScreenState extends State<HomeScreen> {
           backgroundColor: Colors.green,
           textColor: Colors.white,
         );
-        
+
         const SignIn().launch(context, isNewTask: true);
         return;
       }
-      
+
       // Make API request to logout
       final url = Uri.parse('$apiBaseUrl/logout');
-      
+
       final response = await http.post(
         url,
         headers: {
@@ -74,10 +116,10 @@ class _HomeScreenState extends State<HomeScreen> {
           'Authorization': 'Bearer $accessToken',
         },
       );
-      
+
       // Clear SharedPreferences regardless of response
       await prefs.clear();
-      
+
       if (response.statusCode == 200) {
         // Successfully logged out
         Fluttertoast.showToast(
@@ -98,18 +140,17 @@ class _HomeScreenState extends State<HomeScreen> {
           textColor: Colors.white,
         );
       }
-      
+
       // Navigate to login screen
       const SignIn().launch(context, isNewTask: true);
-      
     } catch (e) {
       // Handle network or other errors
       print('Logout error: $e');
-      
+
       // Clear SharedPreferences anyway to ensure user can logout locally
       final prefs = await SharedPreferences.getInstance();
       await prefs.clear();
-      
+
       Fluttertoast.showToast(
         msg: "Berhasil keluar dari aplikasi",
         toastLength: Toast.LENGTH_SHORT,
@@ -117,7 +158,7 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: Colors.green,
         textColor: Colors.white,
       );
-      
+
       // Navigate to login screen
       const SignIn().launch(context, isNewTask: true);
     } finally {
@@ -126,6 +167,7 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -180,13 +222,13 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                               const SizedBox(height: 10.0),
                               Text(
-                                'Sahidul Islam',
+                                userName,
                                 style: kTextStyle.copyWith(
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                               Text(
-                                'Admin',
+                                userEmail,
                                 style: kTextStyle.copyWith(
                                   color: kGreyTextColor,
                                 ),
@@ -382,22 +424,19 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: kGreyTextColor,
               ),
               title: Text(
-                'Logout',
+                'Keluar',
                 style: kTextStyle.copyWith(color: kGreyTextColor),
               ),
-              trailing: isLoggingOut 
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      color: kMainColor,
-                      strokeWidth: 2.0,
-                    ),
-                  )
-                : const Icon(
-                    Icons.arrow_forward_ios,
-                    color: kGreyTextColor,
-                  ),
+              trailing: isLoggingOut
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        color: kMainColor,
+                        strokeWidth: 2.0,
+                      ),
+                    )
+                  : const Icon(Icons.arrow_forward_ios, color: kGreyTextColor),
             ),
           ],
         ),
@@ -419,6 +458,106 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               child: Column(
                 children: [
+                  const SizedBox(height: 20.0),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Material(
+                          elevation: 2.0,
+                          child: GestureDetector(
+                            onTap: () {
+                              const PayrollManagementScreen().launch(context);
+                            },
+                            child: Container(
+                              width: context.width(),
+                              padding: const EdgeInsets.all(10.0),
+                              decoration: const BoxDecoration(
+                                border: Border(
+                                  left: BorderSide(
+                                    color: Color(0xFF4ACDF9),
+                                    width: 3.0,
+                                  ),
+                                ),
+                                color: Colors.white,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Image.asset(
+                                    'images/immigration_3125856.png',
+                                    width:
+                                        60, // sesuaikan nilai width jika ingin lebih kecil/besar
+                                    height:
+                                        60, // sesuaikan nilai height jika ingin lebih kecil/besar
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Presensi Masuk',
+                                    textAlign: TextAlign
+                                        .center, // memastikan teks rata tengah
+                                    maxLines: 2,
+                                    style: kTextStyle.copyWith(
+                                      color: kTitleColor,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 20.0),
+                      Expanded(
+                        child: Material(
+                          elevation: 2.0,
+                          child: GestureDetector(
+                            onTap: () {
+                              const EmptyFileManagement().launch(context);
+                            },
+                            child: Container(
+                              width: context.width(),
+                              padding: const EdgeInsets.all(10.0),
+                              decoration: const BoxDecoration(
+                                border: Border(
+                                  left: BorderSide(
+                                    color: Color(0xFF02B984),
+                                    width: 3.0,
+                                  ),
+                                ),
+                                color: Colors.white,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment
+                                    .center, // agar teks dan ikon berada di tengah kolom
+                                children: [
+                                  // Atur ukuran ikon di sini
+                                  Image.asset(
+                                    'images/immigration_3125856.png',
+                                    width:
+                                        60, // sesuaikan nilai width jika ingin lebih kecil/besar
+                                    height:
+                                        60, // sesuaikan nilai height jika ingin lebih kecil/besar
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Presensi Keluar',
+                                    textAlign: TextAlign
+                                        .center, // memastikan teks rata tengah
+                                    maxLines: 2,
+                                    style: kTextStyle.copyWith(
+                                      color: kTitleColor,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: 20.0),
                   Row(
                     children: [
@@ -492,100 +631,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                   Text(
                                     'Expense Management',
-                                    style: kTextStyle.copyWith(
-                                      color: kTitleColor,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20.0),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Material(
-                          elevation: 2.0,
-                          child: GestureDetector(
-                            onTap: () {
-                              const PayrollManagementScreen().launch(context);
-                            },
-                            child: Container(
-                              width: context.width(),
-                              padding: const EdgeInsets.all(10.0),
-                              decoration: const BoxDecoration(
-                                border: Border(
-                                  left: BorderSide(
-                                    color: Color(0xFF4ACDF9),
-                                    width: 3.0,
-                                  ),
-                                ),
-                                color: Colors.white,
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Image(
-                                    image: AssetImage(
-                                      'images/payrollmanagement.png',
-                                    ),
-                                  ),
-                                  Text(
-                                    'Payroll Management',
-                                    style: kTextStyle.copyWith(
-                                      color: kTitleColor,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 20.0),
-                      Expanded(
-                        child: Material(
-                          elevation: 2.0,
-                          child: GestureDetector(
-                            onTap: () {
-                              const EmptyFileManagement().launch(context);
-                            },
-                            child: Container(
-                              width: context.width(),
-                              padding: const EdgeInsets.all(10.0),
-                              decoration: const BoxDecoration(
-                                border: Border(
-                                  left: BorderSide(
-                                    color: Color(0xFF02B984),
-                                    width: 3.0,
-                                  ),
-                                ),
-                                color: Colors.white,
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment
-                                    .center, // agar teks dan ikon berada di tengah kolom
-                                children: [
-                                  // Atur ukuran ikon di sini
-                                  Image.asset(
-                                    'images/immigration_3125856.png',
-                                    width:
-                                        60, // sesuaikan nilai width jika ingin lebih kecil/besar
-                                    height:
-                                        60, // sesuaikan nilai height jika ingin lebih kecil/besar
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    'Presensi',
-                                    textAlign: TextAlign
-                                        .center, // memastikan teks rata tengah
-                                    maxLines: 2,
                                     style: kTextStyle.copyWith(
                                       color: kTitleColor,
                                       fontWeight: FontWeight.bold,
