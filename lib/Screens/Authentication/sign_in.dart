@@ -11,6 +11,7 @@ import 'package:hrms/constant.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'package:http/http.dart' as http;
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SignIn extends StatefulWidget {
   const SignIn({Key? key}) : super(key: key);
@@ -28,11 +29,10 @@ class _SignInState extends State<SignIn> {
 
   // Function to handle API sign in
   Future<void> signInWithApi() async {
-    print('sampai disini 1');
     try {
       if (!mounted) return;
       setState(() => isLoading = true);
-      print('sampai disini 2');
+      
       // Replace with your actual API endpoint
       final url = Uri.parse('$apiBaseUrl/login');
 
@@ -49,10 +49,67 @@ class _SignInState extends State<SignIn> {
       if (response.statusCode == 200) {
         // Successfully logged in
         final responseData = json.decode(response.body);
-
-        // Handle saving the token if your API returns one
-        // You might want to use shared_preferences to store the token
-        // For example: await SharedPreferences.getInstance().then((prefs) => prefs.setString('token', responseData['token']));
+        
+        // Print response for debugging
+        print('Login response: ${response.body}');
+        
+        // Get shared preferences instance
+        final prefs = await SharedPreferences.getInstance();
+        
+        // Check if the response has the expected format with 'data' field
+        if (responseData['data'] != null) {
+          final data = responseData['data'];
+          
+          // Store access token
+          if (data['access_token'] != null) {
+            await prefs.setString('access_token', data['access_token']);
+            print('Saved access_token to SharedPreferences');
+          }
+          
+          // Store token type
+          if (data['token_type'] != null) {
+            await prefs.setString('token_type', data['token_type']);
+            print('Saved token_type to SharedPreferences');
+          }
+          
+          // Store user data as JSON string
+          if (data['user'] != null) {
+            await prefs.setString('user', json.encode(data['user']));
+            print('Saved user data to SharedPreferences');
+          }
+          
+          // Store roles as JSON string
+          if (data['Role'] != null) {
+            await prefs.setString('roles', json.encode(data['Role']));
+            print('Saved roles to SharedPreferences');
+          }
+        } 
+        // If the response doesn't have a 'data' field, try to parse it directly
+        else {
+          // Store access token
+          if (responseData['access_token'] != null) {
+            await prefs.setString('access_token', responseData['access_token']);
+            print('Saved access_token to SharedPreferences (direct)');
+          }
+          
+          // Store token type
+          if (responseData['token_type'] != null) {
+            await prefs.setString('token_type', responseData['token_type']);
+            print('Saved token_type to SharedPreferences (direct)');
+          }
+          
+          // Store user data as JSON string
+          if (responseData['user'] != null) {
+            await prefs.setString('user', json.encode(responseData['user']));
+            print('Saved user data to SharedPreferences (direct)');
+          }
+          
+          // Store roles as JSON string
+          if (responseData['Role'] != null) {
+            await prefs.setString('roles', json.encode(responseData['Role']));
+            print('Saved roles to SharedPreferences (direct)');
+          }
+        }
 
         // Show success toast
         Fluttertoast.showToast(
