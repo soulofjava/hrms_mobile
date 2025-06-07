@@ -19,6 +19,9 @@ import 'package:hrms/Screens/Payroll%20Management/management_screen.dart';
 import 'package:hrms/Screens/Settings/settings_screen.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:http/http.dart' as http;
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../constant.dart';
 
@@ -32,6 +35,97 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   bool isChecked = false;
+  bool isLoggingOut = false;
+
+  // Function to handle logout
+  Future<void> logoutUser() async {
+    try {
+      setState(() {
+        isLoggingOut = true;
+      });
+
+      // Get the access token from SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      final accessToken = prefs.getString('access_token');
+      
+      if (accessToken == null || accessToken.isEmpty) {
+        // If no token is found, just clear preferences and navigate to login
+        await prefs.clear();
+        
+        Fluttertoast.showToast(
+          msg: "Berhasil keluar",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.green,
+          textColor: Colors.white,
+        );
+        
+        const SignIn().launch(context, isNewTask: true);
+        return;
+      }
+      
+      // Make API request to logout
+      final url = Uri.parse('$apiBaseUrl/logout');
+      
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
+      );
+      
+      // Clear SharedPreferences regardless of response
+      await prefs.clear();
+      
+      if (response.statusCode == 200) {
+        // Successfully logged out
+        Fluttertoast.showToast(
+          msg: "Berhasil keluar",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.green,
+          textColor: Colors.white,
+        );
+      } else {
+        // Log the error but still proceed with local logout
+        print('Logout API error: ${response.body}');
+        Fluttertoast.showToast(
+          msg: "Berhasil keluar dari aplikasi",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.green,
+          textColor: Colors.white,
+        );
+      }
+      
+      // Navigate to login screen
+      const SignIn().launch(context, isNewTask: true);
+      
+    } catch (e) {
+      // Handle network or other errors
+      print('Logout error: $e');
+      
+      // Clear SharedPreferences anyway to ensure user can logout locally
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
+      
+      Fluttertoast.showToast(
+        msg: "Berhasil keluar dari aplikasi",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.green,
+        textColor: Colors.white,
+      );
+      
+      // Navigate to login screen
+      const SignIn().launch(context, isNewTask: true);
+    } finally {
+      setState(() {
+        isLoggingOut = false;
+      });
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -280,7 +374,8 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             ListTile(
               onTap: () {
-                const SignIn().launch(context);
+                // Call the logout function
+                logoutUser();
               },
               leading: const Icon(
                 FontAwesomeIcons.signOutAlt,
@@ -290,10 +385,19 @@ class _HomeScreenState extends State<HomeScreen> {
                 'Logout',
                 style: kTextStyle.copyWith(color: kGreyTextColor),
               ),
-              trailing: const Icon(
-                Icons.arrow_forward_ios,
-                color: kGreyTextColor,
-              ),
+              trailing: isLoggingOut 
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      color: kMainColor,
+                      strokeWidth: 2.0,
+                    ),
+                  )
+                : const Icon(
+                    Icons.arrow_forward_ios,
+                    color: kGreyTextColor,
+                  ),
             ),
           ],
         ),
