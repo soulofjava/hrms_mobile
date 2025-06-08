@@ -3,13 +3,14 @@
 import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:camera/camera.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hrms/Screens/Authentication/profile_screen.dart';
 import 'package:hrms/Screens/Authentication/sign_in.dart';
 import 'package:hrms/Screens/Client%20Management/empty_client_list.dart';
 import 'package:hrms/Screens/Employee%20management/management_screen.dart';
 import 'package:hrms/Screens/Expense%20Management/management_screen.dart';
-import 'package:hrms/Screens/File%20Management/empty_file_management.dart';
+import 'package:hrms/Screens/File%20Management/camera_screen.dart';
 import 'package:hrms/Screens/Holiday%20Management/empty_holiday.dart';
 import 'package:hrms/Screens/Home/pricing_screen.dart';
 import 'package:hrms/Screens/Home/privacy_policy.dart';
@@ -44,6 +45,32 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     loadUserData();
+  }
+
+  // Helper method to open camera
+  Future<void> _openCameraWithStatus(String status) async {
+    try {
+      // Get available cameras
+      final cameras = await availableCameras();
+
+      if (cameras.isEmpty) {
+        toast('Tidak ada kamera yang tersedia.');
+        return;
+      }
+
+      // Navigate to CameraScreen with the given status
+      if (context.mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                CameraScreen(cameras: cameras, status: status),
+          ),
+        );
+      }
+    } catch (e) {
+      toast('Error saat membuka kamera: $e');
+    }
   }
 
   // Load user data from SharedPreferences
@@ -464,9 +491,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: Material(
                           elevation: 2.0,
                           child: GestureDetector(
-                            onTap: () {
-                              const EmptyFileManagement().launch(context);
-                            },
+                            onTap: () => _openCameraWithStatus('present'),
                             child: Container(
                               width: context.width(),
                               padding: const EdgeInsets.all(10.0),
@@ -511,9 +536,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: Material(
                           elevation: 2.0,
                           child: GestureDetector(
-                            onTap: () {
-                              const EmptyFileManagement().launch(context);
-                            },
+                            onTap: () => _openCameraWithStatus(''),
                             child: Container(
                               width: context.width(),
                               padding: const EdgeInsets.all(10.0),

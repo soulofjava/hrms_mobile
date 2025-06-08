@@ -6,7 +6,7 @@ import 'dart:convert';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
-import 'package:hrms/Screens/File%20Management/empty_file_management.dart';
+import 'package:hrms/Screens/Home/home_screen.dart';
 import 'package:hrms/constant.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'package:path_provider/path_provider.dart';
@@ -15,8 +15,9 @@ import 'package:http_parser/http_parser.dart';
 
 class CameraScreen extends StatefulWidget {
   final List<CameraDescription> cameras;
-
-  const CameraScreen({Key? key, required this.cameras}) : super(key: key);
+  final String status;
+  const CameraScreen({Key? key, required this.cameras, this.status = 'present'})
+    : super(key: key);
 
   @override
   _CameraScreenState createState() => _CameraScreenState();
@@ -52,50 +53,55 @@ class _CameraScreenState extends State<CameraScreen> {
   }
 
   Future<void> _initializeCamera(bool frontCamera) async {
-    // Find the front camera
-    CameraDescription camera = widget.cameras.firstWhere(
-      (camera) =>
-          camera.lensDirection ==
-          (frontCamera ? CameraLensDirection.front : CameraLensDirection.back),
-      orElse: () => widget.cameras.first,
-    );
+    try {
+      // Find the front camera
+      CameraDescription camera = widget.cameras.firstWhere(
+        (camera) =>
+            camera.lensDirection ==
+            (frontCamera
+                ? CameraLensDirection.front
+                : CameraLensDirection.back),
+        orElse: () => widget.cameras.first,
+      );
 
-    // Initialize the controller with high resolution
-    _controller = CameraController(
-      camera,
-      ResolutionPreset.high, // Using high resolution instead of medium
-      enableAudio: false, // Audio not needed for selfies
-      imageFormatGroup: ImageFormatGroup.jpeg,
-    );
+      // Initialize the controller with high resolution
+      _controller = CameraController(
+        camera,
+        ResolutionPreset.high,
+        enableAudio: false,
+        imageFormatGroup: ImageFormatGroup.jpeg,
+      );
 
-    // Initialize the controller. This returns a Future.
-    _initializeControllerFuture = _controller.initialize();
+      // Initialize the controller. This returns a Future.
+      _initializeControllerFuture = _controller.initialize();
 
-    // Only update the state if the widget is still mounted
-    if (mounted) {
-      _initializeControllerFuture
-          .then((_) {
-            setState(() {
-              _isCameraReady = true;
-            });
-
-            // Start face detection timer
-            _startFaceDetection();
-          })
-          .catchError((Object e) {
-            if (e is CameraException) {
-              switch (e.code) {
-                case 'CameraAccessDenied':
-                  toast(
-                    'Akses kamera ditolak. Mohon berikan izin kamera di pengaturan.',
-                  );
-                  break;
-                default:
-                  toast('Error: ${e.code}\n${e.description}');
-                  break;
-              }
-            }
+      // Only update the state if the widget is still mounted
+      if (mounted) {
+        await _initializeControllerFuture;
+        if (mounted) {
+          setState(() {
+            _isCameraReady = true;
           });
+          // Start face detection timer
+          _startFaceDetection();
+        }
+      }
+    } catch (e) {
+      if (e is CameraException) {
+        switch (e.code) {
+          case 'CameraAccessDenied':
+            toast(
+              'Akses kamera ditolak. Mohon berikan izin kamera di pengaturan.',
+            );
+            break;
+          default:
+            toast('Error: ${e.code}\n${e.description}');
+            break;
+        }
+      } else {
+        toast('Error initializing camera: $e');
+      }
+      print('CameraScreen Error initializing camera: $e');
     }
   }
 
@@ -109,10 +115,17 @@ class _CameraScreenState extends State<CameraScreen> {
   }
 
   Future<void> _processCameraImage() async {
-    if (_isProcessingFrame) return;
+    if (_isProcessingFrame || !mounted) return;
 
     _isProcessingFrame = true;
     try {
+      // Check if controller is initialized and not disposed
+      if (!_controller.value.isInitialized) {
+        print('CameraScreen: Camera controller not initialized');
+        _isProcessingFrame = false;
+        return;
+      }
+
       // Capture a frame from the camera
       final XFile imageFile = await _controller.takePicture();
 
@@ -120,40 +133,38 @@ class _CameraScreenState extends State<CameraScreen> {
       final inputImage = InputImage.fromFilePath(imageFile.path);
       final List<Face> faces = await _faceDetector.processImage(inputImage);
 
-      // Check if a face is detected
-      if (faces.isNotEmpty) {
-        // Face detected
-        if (mounted) {
-          setState(() {
-            _isFaceDetected = true;
-          });
-        }
-      } else {
-        // No face detected
-        if (mounted) {
-          setState(() {
-            _isFaceDetected = false;
-          });
-        }
+      // Check if a face is detected and if the widget is still mounted
+      if (mounted) {
+        setState(() {
+          _isFaceDetected = faces.isNotEmpty;
+        });
       }
 
       // Delete the temporary image
       File(imageFile.path).deleteSync();
     } catch (e) {
       print('CameraScreen Error processing camera image: $e');
+      // Don't update UI if widget is no longer mounted
+      if (!mounted) return;
     } finally {
-      _isProcessingFrame = false;
+      if (mounted) {
+        _isProcessingFrame = false;
+      }
     }
   }
 
   @override
   void dispose() {
-    // Dispose of the controller when the widget is disposed
-    _controller.dispose();
-    // Stop the timer
+    print("CameraScreen dispose called");
+    // Set a flag to prevent further processing
+    _isProcessingFrame = true;
+
+    // Stop the timer immediately
     _timer?.cancel();
-    // Close the face detector
-    _faceDetector.close();
+    _timer = null;
+
+    // Then dispose resources
+    _stopCameraAndCleanup();
     super.dispose();
   }
 
@@ -178,6 +189,31 @@ class _CameraScreenState extends State<CameraScreen> {
     return filePath;
   }
 
+  // Add this method to properly close the camera
+  Future<void> _stopCameraAndCleanup() async {
+    try {
+      // Cancel the timer first to prevent further processing
+      _timer?.cancel();
+      _timer = null;
+
+      // Close the face detector
+      await _faceDetector.close();
+
+      // Only dispose if initialized and not already disposed
+      if (_controller.value.isInitialized) {
+        try {
+          await _controller.dispose();
+        } catch (e) {
+          print("CameraScreen Error disposing camera controller: $e");
+        }
+      }
+
+      print("CameraScreen Camera resources closed successfully");
+    } catch (e) {
+      print("CameraScreen Error closing camera resources: $e");
+    }
+  }
+
   Future<void> _uploadAttendance(String imagePath) async {
     setState(() {
       _isUploading = true;
@@ -200,8 +236,13 @@ class _CameraScreenState extends State<CameraScreen> {
         return;
       }
 
-      // Print API URL for debugging
-      print("CameraScreen API URL: $apiBaseUrl/attendance/clock-in");
+      // Determine endpoint based on status
+      final String endpoint = widget.status.isEmpty
+          ? '/attendance/clock-out' // Empty status means clock-out
+          : '/attendance/clock-in'; // Non-empty status means clock-in
+
+      print("CameraScreen API URL: $apiBaseUrl$endpoint");
+      print("CameraScreen Status: '${widget.status}'");
 
       // Check if file exists
       final file = File(imagePath);
@@ -221,10 +262,10 @@ class _CameraScreenState extends State<CameraScreen> {
       print("CameraScreen File size: ${await file.length()} bytes");
       print("CameraScreen File path: $imagePath");
 
-      // Create multipart request
+      // Create multipart request with the appropriate endpoint
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse('$apiBaseUrl/attendance/clock-in'),
+        Uri.parse('$apiBaseUrl$endpoint'),
       );
 
       // Add headers
@@ -249,8 +290,10 @@ class _CameraScreenState extends State<CameraScreen> {
 
       request.files.add(multipartFile);
 
-      // Add status field
-      request.fields['status'] = 'present';
+      // Add status field only if it's not empty (clock-in)
+      if (widget.status.isNotEmpty) {
+        request.fields['status'] = widget.status;
+      }
 
       print("CameraScreen Request fields: ${request.fields}");
       print("CameraScreen Files to upload: ${request.files.length}");
@@ -287,18 +330,56 @@ class _CameraScreenState extends State<CameraScreen> {
             textColor: Colors.white,
           );
 
+          // Properly close camera resources before navigating
+          await _stopCameraAndCleanup();
+
           if (context.mounted) {
-            const EmptyFileManagement().launch(context);
+            Future.delayed(Duration.zero, () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const HomeScreen()),
+              );
+            });
           }
         } else {
           // Handle error
           Map<String, dynamic> errorData = {};
           try {
             errorData = json.decode(response.body);
-            final errorMessage =
-                errorData['meta']?['message'] ??
-                errorData['message'] ??
+            print("CameraScreen Error data: $errorData");
+
+            // Special handling for already clocked in/out error (code 422)
+            if (errorData['meta']?['code'] == 422) {
+              final errorMessage = errorData['data']?['message'] ?? '';
+
+              if (errorMessage.contains("already clocked in") ||
+                  errorMessage.contains("already clocked out")) {
+                toast(
+                  widget.status.isEmpty
+                      ? 'Anda sudah melakukan presensi pulang hari ini.'
+                      : 'Anda sudah melakukan presensi masuk hari ini.',
+                  bgColor: Colors.orange,
+                  textColor: Colors.white,
+                );
+
+                // Close the camera and return to previous screen
+                _stopCameraAndCleanup();
+
+                if (context.mounted) {
+                  const HomeScreen().launch(context);
+                }
+                return;
+              }
+            }
+
+            // Handle other errors
+            final metaMessage = errorData['meta']?['message'];
+            final dataMessage = errorData['data']?['message'];
+            final fallbackMessage =
                 'Gagal mengirim presensi. Silakan coba lagi.';
+
+            // Use the most specific error message available
+            final errorMessage = dataMessage ?? metaMessage ?? fallbackMessage;
 
             toast(errorMessage, bgColor: Colors.red, textColor: Colors.white);
           } catch (e) {
@@ -346,7 +427,9 @@ class _CameraScreenState extends State<CameraScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Ambil Selfie',
+          widget.status.isEmpty
+              ? 'Ambil Selfie untuk Pulang'
+              : 'Ambil Selfie untuk Masuk',
           style: kTextStyle.copyWith(
             color: Colors.white,
             fontWeight: FontWeight.bold,
