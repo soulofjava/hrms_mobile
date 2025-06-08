@@ -16,7 +16,6 @@ import 'package:hrms/Screens/Home/privacy_policy.dart';
 import 'package:hrms/Screens/Home/terms_of_service.dart';
 import 'package:hrms/Screens/NOC%20Certificate/empty_certificate.dart';
 import 'package:hrms/Screens/Notice%20Board/empty_notice_board.dart';
-import 'package:hrms/Screens/Payroll%20Management/management_screen.dart';
 import 'package:hrms/Screens/Settings/settings_screen.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'package:share_plus/share_plus.dart';
@@ -466,7 +465,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           elevation: 2.0,
                           child: GestureDetector(
                             onTap: () {
-                              const PayrollManagementScreen().launch(context);
+                              const EmptyFileManagement().launch(context);
                             },
                             child: Container(
                               width: context.width(),
