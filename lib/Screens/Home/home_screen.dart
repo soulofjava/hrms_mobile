@@ -5,21 +5,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:hrms/Kasbon/kasbon.dart';
 import 'package:hrms/Screens/Authentication/profile_screen.dart';
 import 'package:hrms/Screens/Authentication/sign_in.dart';
-import 'package:hrms/Screens/Client%20Management/empty_client_list.dart';
-import 'package:hrms/Screens/Employee%20management/management_screen.dart';
 import 'package:hrms/Screens/Expense%20Management/management_screen.dart';
-import 'package:hrms/Screens/File%20Management/camera_screen.dart';
-import 'package:hrms/Screens/Holiday%20Management/empty_holiday.dart';
-import 'package:hrms/Screens/Home/pricing_screen.dart';
-import 'package:hrms/Screens/Home/privacy_policy.dart';
-import 'package:hrms/Screens/Home/terms_of_service.dart';
-import 'package:hrms/Screens/NOC%20Certificate/empty_certificate.dart';
-import 'package:hrms/Screens/Notice%20Board/empty_notice_board.dart';
-import 'package:hrms/Screens/Settings/settings_screen.dart';
+import 'package:hrms/Screens/Camera/camera_screen.dart';
 import 'package:nb_utils/nb_utils.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:http/http.dart' as http;
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -204,11 +195,11 @@ class _HomeScreenState extends State<HomeScreen> {
         elevation: 0.0,
         titleSpacing: 0.0,
         iconTheme: const IconThemeData(color: Colors.white),
-        title: Text(
-          'HRM & Payroll Management',
-          maxLines: 2,
-          style: kTextStyle.copyWith(color: Colors.white, fontSize: 16.0),
-        ),
+        // title: Text(
+        //   'HRM & Payroll Management',
+        //   maxLines: 2,
+        //   style: kTextStyle.copyWith(color: Colors.white, fontSize: 16.0),
+        // ),
         // actions: const [
         //   Image(image: AssetImage('images/notificationicon.png')),
         // ],
@@ -216,229 +207,45 @@ class _HomeScreenState extends State<HomeScreen> {
       drawer: Drawer(
         child: ListView(
           children: [
-            Container(
-              height: context.height() / 3,
-              decoration: const BoxDecoration(
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(30.0),
-                  bottomRight: Radius.circular(30.0),
-                ),
-                color: kMainColor,
-              ),
-              child: Column(
-                children: [
-                  Container(
-                    height: context.height() / 4,
-                    decoration: const BoxDecoration(
-                      borderRadius: BorderRadius.only(
-                        bottomLeft: Radius.circular(30.0),
-                        bottomRight: Radius.circular(30.0),
-                      ),
-                      color: Colors.white,
+            Column(
+              children: [
+                Container(
+                  height: context.height() / 4,
+                  decoration: const BoxDecoration(
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(30.0),
+                      bottomRight: Radius.circular(30.0),
                     ),
-                    child: Center(
-                      child:
-                          Column(
-                            children: [
-                              const SizedBox(height: 10.0),
-                              const CircleAvatar(
-                                radius: 60.0,
-                                backgroundColor: kMainColor,
-                                backgroundImage: AssetImage('images/emp1.png'),
-                              ),
-                              const SizedBox(height: 10.0),
-                              Text(
-                                userName,
-                                style: kTextStyle.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              Text(
-                                userEmail,
-                                style: kTextStyle.copyWith(
-                                  color: kGreyTextColor,
-                                ),
-                              ),
-                            ],
-                          ).onTap(() {
-                            const ProfileScreen().launch(context);
-                          }),
-                    ),
+                    color: Colors.white,
                   ),
-                  const SizedBox(height: 10.0),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Column(
-                        children: [
-                          Text(
-                            '27',
-                            style: kTextStyle.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
+                  child: Center(
+                    child:
+                        Column(
+                          children: [
+                            const SizedBox(height: 10.0),
+                            const CircleAvatar(
+                              radius: 60.0,
+                              backgroundColor: kMainColor,
+                              backgroundImage: AssetImage('images/emp1.png'),
                             ),
-                          ),
-                          Text(
-                            'Employees',
-                            style: kTextStyle.copyWith(color: Colors.white),
-                          ),
-                        ],
-                      ),
-                      Column(
-                        children: [
-                          Text(
-                            '12',
-                            style: kTextStyle.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
+                            const SizedBox(height: 10.0),
+                            Text(
+                              userName,
+                              style: kTextStyle.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
-                          Text(
-                            'Client',
-                            style: kTextStyle.copyWith(color: Colors.white),
-                          ),
-                        ],
-                      ),
-                      Column(
-                        children: [
-                          Text(
-                            '50',
-                            style: kTextStyle.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
+                            Text(
+                              userEmail,
+                              style: kTextStyle.copyWith(color: kGreyTextColor),
                             ),
-                          ),
-                          Text(
-                            'Total Files',
-                            style: kTextStyle.copyWith(color: Colors.white),
-                          ),
-                        ],
-                      ),
-                    ],
+                          ],
+                        ).onTap(() {
+                          const ProfileScreen().launch(context);
+                        }),
                   ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20.0),
-            ListTile(
-              onTap: () {
-                const SettingScree().launch(context);
-              },
-              leading: const Icon(Icons.settings, color: kGreyTextColor),
-              title: Text(
-                'Settings',
-                style: kTextStyle.copyWith(color: kGreyTextColor),
-              ),
-              trailing: const Icon(
-                Icons.arrow_forward_ios,
-                color: kGreyTextColor,
-              ),
-            ),
-            ListTile(
-              onTap: () {
-                const PricingScreen().launch(context);
-              },
-              leading: const Icon(
-                FontAwesomeIcons.medal,
-                color: kGreyTextColor,
-              ),
-              title: Text(
-                'Premium Version   (Pro)',
-                style: kTextStyle.copyWith(color: kGreyTextColor),
-              ),
-              trailing: const Icon(
-                Icons.arrow_forward_ios,
-                color: kGreyTextColor,
-              ),
-            ),
-            ListTile(
-              onTap: () {
-                const EmptyHoliday().launch(context);
-              },
-              leading: const Icon(
-                FontAwesomeIcons.coffee,
-                color: kGreyTextColor,
-              ),
-              title: Text(
-                'Holiday',
-                style: kTextStyle.copyWith(color: kGreyTextColor),
-              ),
-              trailing: const Icon(
-                Icons.arrow_forward_ios,
-                color: kGreyTextColor,
-              ),
-            ),
-            ListTile(
-              onTap: () {
-                const EmptyHoliday().launch(context);
-              },
-              leading: const Icon(FontAwesomeIcons.lock, color: kGreyTextColor),
-              title: Text(
-                'App Lock',
-                style: kTextStyle.copyWith(color: kGreyTextColor),
-              ),
-              trailing: Transform.scale(
-                scale: 0.6,
-                child: CupertinoSwitch(
-                  value: isChecked,
-                  thumbColor: kGreyTextColor,
-                  onChanged: (bool value) {
-                    setState(() {
-                      isChecked = value;
-                    });
-                  },
                 ),
-              ),
-            ),
-            ListTile(
-              onTap: () {
-                setState(() {
-                  Share.share('check out This Awesome HRM');
-                });
-              },
-              leading: const Icon(
-                FontAwesomeIcons.userFriends,
-                color: kGreyTextColor,
-              ),
-              title: Text(
-                'Share With Friends',
-                style: kTextStyle.copyWith(color: kGreyTextColor),
-              ),
-              trailing: const Icon(
-                Icons.arrow_forward_ios,
-                color: kGreyTextColor,
-              ),
-            ),
-            ListTile(
-              onTap: () {
-                const TermsOfServices().launch(context);
-              },
-              leading: const Icon(
-                FontAwesomeIcons.infoCircle,
-                color: kGreyTextColor,
-              ),
-              title: Text(
-                'Terms of Services',
-                style: kTextStyle.copyWith(color: kGreyTextColor),
-              ),
-              trailing: const Icon(
-                Icons.arrow_forward_ios,
-                color: kGreyTextColor,
-              ),
-            ),
-            ListTile(
-              onTap: () {
-                const PrivacyPolicy().launch(context);
-              },
-              leading: const Icon(Icons.dangerous_sharp, color: kGreyTextColor),
-              title: Text(
-                'Privacy Policy',
-                style: kTextStyle.copyWith(color: kGreyTextColor),
-              ),
-              trailing: const Icon(
-                Icons.arrow_forward_ios,
-                color: kGreyTextColor,
-              ),
+              ],
             ),
             ListTile(
               onTap: () {
@@ -505,10 +312,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                 color: Colors.white,
                               ),
                               child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   Image.asset(
-                                    'images/immigration_3125856.png',
+                                    'images/arrow_16559130.png',
                                     width:
                                         60, // sesuaikan nilai width jika ingin lebih kecil/besar
                                     height:
@@ -550,16 +357,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                 color: Colors.white,
                               ),
                               child: Column(
-                                crossAxisAlignment: CrossAxisAlignment
-                                    .center, // agar teks dan ikon berada di tengah kolom
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  // Atur ukuran ikon di sini
                                   Image.asset(
-                                    'images/immigration_3125856.png',
-                                    width:
-                                        60, // sesuaikan nilai width jika ingin lebih kecil/besar
-                                    height:
-                                        60, // sesuaikan nilai height jika ingin lebih kecil/besar
+                                    'images/arrow_16557141.png',
+                                    width: 60,
+                                    height: 60,
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
@@ -588,7 +391,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           elevation: 2.0,
                           child: GestureDetector(
                             onTap: () {
-                              const EmployeeManagement().launch(context);
+                              const KasbonScreen().launch(context);
                             },
                             child: Container(
                               width: context.width(),
@@ -603,15 +406,21 @@ class _HomeScreenState extends State<HomeScreen> {
                                 color: Colors.white,
                               ),
                               child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  const Image(
-                                    image: AssetImage(
-                                      'images/employeemanagement.png',
-                                    ),
+                                  Image.asset(
+                                    'images/bill_7325300.png',
+                                    width:
+                                        60, // sesuaikan nilai width jika ingin lebih kecil/besar
+                                    height:
+                                        60, // sesuaikan nilai height jika ingin lebih kecil/besar
                                   ),
+                                  const SizedBox(height: 8),
                                   Text(
-                                    'Employee Management',
+                                    'Kasbon',
+                                    textAlign: TextAlign
+                                        .center, // memastikan teks rata tengah
+                                    maxLines: 2,
                                     style: kTextStyle.copyWith(
                                       color: kTitleColor,
                                       fontWeight: FontWeight.bold,
@@ -665,139 +474,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     ],
-                  ),
-                  const SizedBox(height: 20.0),
-                  Material(
-                    elevation: 2.0,
-                    child: Container(
-                      width: context.width(),
-                      padding: const EdgeInsets.all(10.0),
-                      decoration: const BoxDecoration(
-                        border: Border(
-                          left: BorderSide(
-                            color: Color(0xFF4DCEFA),
-                            width: 3.0,
-                          ),
-                        ),
-                        color: Colors.white,
-                      ),
-                      child: ListTile(
-                        onTap: () {
-                          const EmptyClientList().launch(context);
-                        },
-                        leading: const Image(
-                          image: AssetImage('images/clientmanagement.png'),
-                        ),
-                        title: Text(
-                          'Client Management',
-                          maxLines: 2,
-                          style: kTextStyle.copyWith(
-                            color: kTitleColor,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        trailing: const Icon(Icons.arrow_forward_ios),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20.0),
-                  Material(
-                    elevation: 2.0,
-                    child: Container(
-                      width: context.width(),
-                      padding: const EdgeInsets.all(10.0),
-                      decoration: const BoxDecoration(
-                        border: Border(
-                          left: BorderSide(
-                            color: Color(0xFFFF8919),
-                            width: 3.0,
-                          ),
-                        ),
-                        color: Colors.white,
-                      ),
-                      child: ListTile(
-                        onTap: () {
-                          const EmptyCertificate().launch(context);
-                        },
-                        leading: const Image(
-                          image: AssetImage('images/noccertificate.png'),
-                        ),
-                        title: Text(
-                          'NOC/Ex Certificate',
-                          maxLines: 2,
-                          style: kTextStyle.copyWith(
-                            color: kTitleColor,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        trailing: const Icon(Icons.arrow_forward_ios),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20.0),
-                  Material(
-                    elevation: 2.0,
-                    child: Container(
-                      width: context.width(),
-                      padding: const EdgeInsets.all(10.0),
-                      decoration: const BoxDecoration(
-                        border: Border(
-                          left: BorderSide(
-                            color: Color(0xFF1CC389),
-                            width: 3.0,
-                          ),
-                        ),
-                        color: Colors.white,
-                      ),
-                      child: ListTile(
-                        onTap: () {
-                          const EmptyNoticeBoard().launch(context);
-                        },
-                        leading: const Image(
-                          image: AssetImage('images/noticeboard.png'),
-                        ),
-                        title: Text(
-                          'Notice Board',
-                          maxLines: 2,
-                          style: kTextStyle.copyWith(
-                            color: kTitleColor,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        trailing: const Icon(Icons.arrow_forward_ios),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20.0),
-                  Material(
-                    elevation: 2.0,
-                    child: Container(
-                      width: context.width(),
-                      padding: const EdgeInsets.all(10.0),
-                      decoration: const BoxDecoration(
-                        border: Border(
-                          left: BorderSide(
-                            color: Color(0xFF8270F1),
-                            width: 3.0,
-                          ),
-                        ),
-                        color: Colors.white,
-                      ),
-                      child: ListTile(
-                        leading: const Image(
-                          image: AssetImage('images/awards.png'),
-                        ),
-                        title: Text(
-                          'Awards',
-                          maxLines: 2,
-                          style: kTextStyle.copyWith(
-                            color: kTitleColor,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        trailing: const Icon(Icons.arrow_forward_ios),
-                      ),
-                    ),
                   ),
                 ],
               ),

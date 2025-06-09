@@ -93,7 +93,7 @@ class _CameraScreenState extends State<CameraScreen> {
     _isDisposed = true;
 
     // Then dispose resources
-    // _stopCameraAndCleanup();
+    _stopCameraAndCleanup();
     super.dispose();
   }
 
@@ -276,11 +276,10 @@ class _CameraScreenState extends State<CameraScreen> {
           );
 
           // Properly close camera resources before navigating
-          // await _stopCameraAndCleanup();
+          await _stopCameraAndCleanup();
 
           if (context.mounted) {
             Future.delayed(Duration.zero, () {
-              _stopCameraAndCleanup();
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => const HomeScreen()),
@@ -309,7 +308,7 @@ class _CameraScreenState extends State<CameraScreen> {
                 );
 
                 // Close the camera and return to previous screen
-                // _stopCameraAndCleanup();
+                await _stopCameraAndCleanup();
 
                 if (context.mounted) {
                   const HomeScreen().launch(context);
@@ -368,8 +367,6 @@ class _CameraScreenState extends State<CameraScreen> {
         });
       }
     }
-    // Close the camera and return to previous screen
-    // _stopCameraAndCleanup();
   }
 
   @override
@@ -377,10 +374,11 @@ class _CameraScreenState extends State<CameraScreen> {
     return WillPopScope(
       onWillPop: () async {
         // Clean up camera resources before popping
-        // await _stopCameraAndCleanup();
+        await _stopCameraAndCleanup();
         return true;
       },
       child: Scaffold(
+        backgroundColor: kMainColor,
         appBar: AppBar(
           title: Text(
             widget.status.isEmpty
@@ -392,68 +390,122 @@ class _CameraScreenState extends State<CameraScreen> {
             ),
           ),
           backgroundColor: kMainColor,
+          elevation: 0,
           iconTheme: const IconThemeData(color: Colors.white),
         ),
-        body: FutureBuilder<void>(
-          future: _initializeControllerFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.done &&
-                _isCameraReady &&
-                mounted &&
-                !_isDisposed &&
-                _controller.value.isInitialized) {
-              // If the Future is complete, display the preview
-              return Column(
-                children: [
-                  // Using Expanded instead of AspectRatio for better flexibility
-                  Expanded(child: CameraPreview(_controller)),
-                  Container(
-                    height: 100,
-                    color: Colors.black,
-                    child: Center(
-                      child: _isUploading
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : FloatingActionButton(
-                              backgroundColor: kMainColor,
-                              child: const Icon(Icons.camera_alt),
-                              onPressed: () async {
-                                if (_isUploading || !mounted || _isDisposed)
-                                  return;
-
-                                try {
-                                  setState(() {
-                                    _isUploading = true;
-                                  });
-
-                                  // Display a loading indicator while we take the picture
-                                  toast('Mengambil foto...');
-
-                                  // Take the picture
-                                  final String imagePath = await _takePicture();
-
-                                  // Upload attendance with image
-                                  await _uploadAttendance(imagePath);
-                                } catch (e) {
-                                  // If an error occurs, log the error to the console.
-                                  print('Error: $e');
-                                  if (mounted && !_isDisposed) {
-                                    toast('Error: $e');
-                                    setState(() {
-                                      _isUploading = false;
-                                    });
-                                  }
-                                }
-                              },
-                            ),
-                    ),
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 20.0),
+            Expanded(
+              child: Container(
+                width: context.width(),
+                padding: const EdgeInsets.only(top: 20.0),
+                decoration: const BoxDecoration(
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(30.0),
+                    topRight: Radius.circular(30.0),
                   ),
-                ],
-              );
-            } else {
-              // Otherwise, display a loading indicator
-              return const Center(child: CircularProgressIndicator());
-            }
-          },
+                  color: Colors.white,
+                ),
+                child: FutureBuilder<void>(
+                  future: _initializeControllerFuture,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.done &&
+                        _isCameraReady &&
+                        mounted &&
+                        !_isDisposed &&
+                        _controller.value.isInitialized) {
+                      // If the Future is complete, display the preview
+                      return Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0,
+                              vertical: 8.0,
+                            ),
+                            child: Text(
+                              'Posisikan wajah Anda di dalam frame kamera',
+                              style: kTextStyle.copyWith(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                          // Using Expanded to fill available space
+                          Expanded(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(20),
+                              child: Container(
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
+                                child: CameraPreview(_controller),
+                              ),
+                            ),
+                          ),
+                          Container(
+                            height: 100,
+                            color: Colors.transparent,
+                            child: Center(
+                              child: _isUploading
+                                  ? const CircularProgressIndicator(
+                                      color: kMainColor,
+                                    )
+                                  : FloatingActionButton.large(
+                                      backgroundColor: kMainColor,
+                                      child: const Icon(
+                                        Icons.camera_alt,
+                                        size: 32,
+                                      ),
+                                      onPressed: () async {
+                                        if (_isUploading ||
+                                            !mounted ||
+                                            _isDisposed)
+                                          return;
+
+                                        try {
+                                          setState(() {
+                                            _isUploading = true;
+                                          });
+
+                                          // Display a loading indicator while we take the picture
+                                          toast('Mengambil foto...');
+
+                                          // Take the picture
+                                          final String imagePath =
+                                              await _takePicture();
+
+                                          // Upload attendance with image
+                                          await _uploadAttendance(imagePath);
+                                        } catch (e) {
+                                          // If an error occurs, log the error to the console.
+                                          print('Error: $e');
+                                          if (mounted && !_isDisposed) {
+                                            toast('Error: $e');
+                                            setState(() {
+                                              _isUploading = false;
+                                            });
+                                          }
+                                        }
+                                      },
+                                    ),
+                            ),
+                          ),
+                        ],
+                      );
+                    } else {
+                      // Otherwise, display a loading indicator
+                      return const Center(
+                        child: CircularProgressIndicator(color: kMainColor),
+                      );
+                    }
+                  },
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

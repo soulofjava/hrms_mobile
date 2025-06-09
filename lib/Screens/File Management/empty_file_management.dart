@@ -2,7 +2,7 @@
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:hrms/Screens/File%20Management/camera_screen.dart';
+import 'package:hrms/Screens/Camera/camera_screen.dart';
 import 'package:hrms/Screens/Home/home_screen.dart'; // Import home screen
 import 'package:nb_utils/nb_utils.dart';
 import '../../GlobalComponents/button_global.dart';
