@@ -25,50 +25,9 @@ class _KasbonFormScreenState extends State<KasbonFormScreen> {
   bool _isAmountValid = false;
   String _formattedAmount = '';
 
-  // Tambahkan variabel untuk format mata uang
-  final _currencyFormatter = NumberFormat.currency(
-    locale: 'id',
-    symbol: '',
-    decimalDigits: 0,
-  );
-
-  // Tambahkan method untuk memformat nilai input
-  void _formatCurrencyInput() {
-    String text = _amountController.text;
-
-    if (text.isEmpty) return;
-
-    // Hapus semua karakter non-digit
-    String digitsOnly = text.replaceAll(RegExp(r'[^\d]'), '');
-
-    if (digitsOnly.isEmpty) {
-      _amountController.clear();
-      return;
-    }
-
-    // Parse ke double
-    double value = double.parse(digitsOnly);
-
-    // Format dengan currency formatter tanpa simbol
-    String formatted = _currencyFormatter.format(value);
-
-    // Update controller dengan nilai yang diformat
-    _amountController.value = TextEditingValue(
-      text: formatted,
-      selection: TextSelection.collapsed(offset: formatted.length),
-    );
-
-    // Validasi jumlah
-    setState(() {
-      _isAmountValid = value > 0 && value <= widget.maximumLimit;
-    });
-  }
-
   @override
   void initState() {
     super.initState();
-    // Ganti listener lama dengan yang baru
-    // _amountController.addListener(_formatCurrencyInput);
   }
 
   @override

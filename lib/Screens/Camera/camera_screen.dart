@@ -22,21 +22,46 @@ class CameraScreen extends StatefulWidget {
   _CameraScreenState createState() => _CameraScreenState();
 }
 
-class _CameraScreenState extends State<CameraScreen> {
-  late CameraController _controller;
-  late Future<void> _initializeControllerFuture;
+class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver {
+  CameraController? _controller;
+  Future<void>? _initializeControllerFuture;
   bool _isCameraReady = false;
   bool _isUploading = false;
   bool _isDisposed = false;
+  bool _isCameraInitialized = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     // Initialize the front camera
     _initializeCamera(true);
   }
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (_isDisposed) return;
+
+    // App state changed before we got the chance to initialize
+    if (_controller == null || !_isCameraInitialized) return;
+
+    if (state == AppLifecycleState.inactive) {
+      // App is in background or inactive, dispose camera to prevent issues
+      _disposeCamera();
+    } else if (state == AppLifecycleState.resumed) {
+      // App is resumed, reinitialize camera if needed
+      if (!_isCameraReady) {
+        _initializeCamera(true);
+      }
+    }
+  }
+
   Future<void> _initializeCamera(bool frontCamera) async {
+    if (_isDisposed) return;
+
+    // First dispose any existing camera
+    await _disposeCamera();
+
     try {
       // Find the front camera
       CameraDescription camera = widget.cameras.firstWhere(
@@ -48,7 +73,7 @@ class _CameraScreenState extends State<CameraScreen> {
         orElse: () => widget.cameras.first,
       );
 
-      // Initialize the controller with medium resolution for better performance
+      // Create a new controller
       _controller = CameraController(
         camera,
         ResolutionPreset.medium,
@@ -56,19 +81,23 @@ class _CameraScreenState extends State<CameraScreen> {
         imageFormatGroup: ImageFormatGroup.jpeg,
       );
 
-      // Initialize the controller. This returns a Future.
-      _initializeControllerFuture = _controller.initialize();
+      // Create a future for the initialization
+      _initializeControllerFuture = _controller?.initialize();
 
-      // Only update the state if the widget is still mounted
-      if (mounted && !_isDisposed) {
+      // Wait for the controller to initialize
+      if (!_isDisposed && _initializeControllerFuture != null) {
         await _initializeControllerFuture;
-        if (mounted && !_isDisposed) {
+
+        if (!_isDisposed && mounted && _controller != null) {
           setState(() {
             _isCameraReady = true;
+            _isCameraInitialized = true;
           });
         }
       }
     } catch (e) {
+      if (_isDisposed) return;
+      
       if (e is CameraException) {
         switch (e.code) {
           case 'CameraAccessDenied':
@@ -87,30 +116,52 @@ class _CameraScreenState extends State<CameraScreen> {
     }
   }
 
+  Future<void> _disposeCamera() async {
+    if (_controller != null && _isCameraInitialized) {
+      try {
+        final CameraController controller = _controller!;
+        _controller = null;
+        _isCameraInitialized = false;
+        _isCameraReady = false;
+        
+        await controller.dispose();
+        
+        if (mounted && !_isDisposed) {
+          setState(() {});
+        }
+      } catch (e) {
+        print("Error disposing camera: $e");
+      }
+    }
+  }
+
   @override
   void dispose() {
     print("CameraScreen dispose called");
     _isDisposed = true;
+    WidgetsBinding.instance.removeObserver(this);
 
-    // Then dispose resources
-    _stopCameraAndCleanup();
+    // Dispose camera resources
+    _disposeCamera();
     super.dispose();
   }
 
   Future<String> _takePicture() async {
-    if (_isDisposed || !mounted) {
+    if (_isDisposed || !mounted || _controller == null || !_isCameraInitialized || !_isCameraReady) {
       throw Exception('Camera not available');
     }
 
-    // Ensure the camera is initialized
-    await _initializeControllerFuture;
-
-    // Check if controller is still initialized
-    if (!_controller.value.isInitialized) {
-      throw Exception('Camera is not initialized');
-    }
-
     try {
+      // Ensure the camera is initialized
+      if (_initializeControllerFuture != null) {
+        await _initializeControllerFuture;
+      }
+
+      // Check if controller is still initialized
+      if (_controller == null || !_controller!.value.isInitialized) {
+        throw Exception('Camera is not initialized');
+      }
+
       // Get the directory for storing images
       final Directory extDir = await getApplicationDocumentsDirectory();
       final String dirPath = '${extDir.path}/Pictures/flutter_camera';
@@ -121,7 +172,7 @@ class _CameraScreenState extends State<CameraScreen> {
           '$dirPath/${DateTime.now().millisecondsSinceEpoch}.jpg';
 
       // Take the picture
-      final XFile image = await _controller.takePicture();
+      final XFile image = await _controller!.takePicture();
 
       // Copy the image to our custom location
       await File(image.path).copy(filePath);
@@ -143,16 +194,7 @@ class _CameraScreenState extends State<CameraScreen> {
   // Add this method to properly close the camera
   Future<void> _stopCameraAndCleanup() async {
     try {
-      // Only dispose if initialized and not already disposed
-      try {
-        if (_controller.value.isInitialized) {
-          await _controller.dispose();
-          print("CameraScreen Camera controller disposed successfully");
-        }
-      } catch (e) {
-        print("CameraScreen Error disposing camera controller: $e");
-      }
-
+      await _disposeCamera();
       print("CameraScreen Camera resources closed successfully");
     } catch (e) {
       print("CameraScreen Error closing camera resources: $e");
@@ -160,9 +202,12 @@ class _CameraScreenState extends State<CameraScreen> {
   }
 
   Future<void> _uploadAttendance(String imagePath) async {
+    if (!mounted || _isDisposed) return;
+    
     setState(() {
       _isUploading = true;
     });
+    
     try {
       // Get token from shared preferences
       SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -170,6 +215,7 @@ class _CameraScreenState extends State<CameraScreen> {
       print("CameraScreen tokenku: $token");
 
       if (token == null || token.isEmpty) {
+        if (!mounted || _isDisposed) return;
         toast(
           'Sesi login telah berakhir. Silakan login kembali.',
           bgColor: Colors.red,
@@ -192,6 +238,7 @@ class _CameraScreenState extends State<CameraScreen> {
       // Check if file exists
       final file = File(imagePath);
       if (!await file.exists()) {
+        if (!mounted || _isDisposed) return;
         toast(
           'File gambar tidak ditemukan',
           bgColor: Colors.red,
@@ -244,6 +291,7 @@ class _CameraScreenState extends State<CameraScreen> {
       print("CameraScreen Files to upload: ${request.files.length}");
 
       // Send the request with timeout
+      if (!mounted || _isDisposed) return;
       toast('Mengirim data presensi...');
 
       try {
@@ -269,6 +317,7 @@ class _CameraScreenState extends State<CameraScreen> {
               responseData['meta']?['message'] ?? 'Presensi berhasil';
           final data = responseData['data'] ?? '';
 
+          if (!mounted || _isDisposed) return;
           toast(
             '$message: $data',
             bgColor: Colors.green,
@@ -278,7 +327,7 @@ class _CameraScreenState extends State<CameraScreen> {
           // Properly close camera resources before navigating
           await _stopCameraAndCleanup();
 
-          if (context.mounted) {
+          if (context.mounted && !_isDisposed) {
             Future.delayed(Duration.zero, () {
               Navigator.pushReplacement(
                 context,
@@ -299,6 +348,7 @@ class _CameraScreenState extends State<CameraScreen> {
 
               if (errorMessage.contains("already clocked in") ||
                   errorMessage.contains("already clocked out")) {
+                if (!mounted || _isDisposed) return;
                 toast(
                   widget.status.isEmpty
                       ? 'Anda sudah melakukan presensi pulang hari ini.'
@@ -310,7 +360,7 @@ class _CameraScreenState extends State<CameraScreen> {
                 // Close the camera and return to previous screen
                 await _stopCameraAndCleanup();
 
-                if (context.mounted) {
+                if (context.mounted && !_isDisposed) {
                   const HomeScreen().launch(context);
                 }
                 return;
@@ -326,9 +376,11 @@ class _CameraScreenState extends State<CameraScreen> {
             // Use the most specific error message available
             final errorMessage = dataMessage ?? metaMessage ?? fallbackMessage;
 
+            if (!mounted || _isDisposed) return;
             toast(errorMessage, bgColor: Colors.red, textColor: Colors.white);
           } catch (e) {
             print('CameraScreen Error parsing response: $e');
+            if (!mounted || _isDisposed) return;
             toast(
               'Gagal mengirim presensi. Format respons tidak valid.',
               bgColor: Colors.red,
@@ -338,6 +390,7 @@ class _CameraScreenState extends State<CameraScreen> {
           print('CameraScreen API Error: ${response.body}');
         }
       } catch (e) {
+        if (!mounted || _isDisposed) return;
         if (e is TimeoutException) {
           toast(
             'Waktu permintaan habis. Periksa koneksi Anda.',
@@ -354,6 +407,7 @@ class _CameraScreenState extends State<CameraScreen> {
         print('CameraScreen Request error: $e');
       }
     } catch (e) {
+      if (!mounted || _isDisposed) return;
       toast(
         'Terjadi kesalahan: ${e.toString()}',
         bgColor: Colors.red,
@@ -371,11 +425,20 @@ class _CameraScreenState extends State<CameraScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
+    if (_isDisposed) {
+      return Container(); // Return empty container if disposed
+    }
+    
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) async {
+        if (didPop) return;
+        
         // Clean up camera resources before popping
         await _stopCameraAndCleanup();
-        return true;
+        if (context.mounted && !_isDisposed) {
+          Navigator.of(context).pop();
+        }
       },
       child: Scaffold(
         backgroundColor: kMainColor,
@@ -408,106 +471,139 @@ class _CameraScreenState extends State<CameraScreen> {
                   ),
                   color: Colors.white,
                 ),
-                child: FutureBuilder<void>(
-                  future: _initializeControllerFuture,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.done &&
-                        _isCameraReady &&
-                        mounted &&
-                        !_isDisposed &&
-                        _controller.value.isInitialized) {
-                      // If the Future is complete, display the preview
-                      return Column(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16.0,
-                              vertical: 8.0,
-                            ),
-                            child: Text(
-                              'Posisikan wajah Anda di dalam frame kamera',
-                              style: kTextStyle.copyWith(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                          // Using Expanded to fill available space
-                          Expanded(
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(20),
-                              child: Container(
-                                margin: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                ),
-                                child: CameraPreview(_controller),
-                              ),
-                            ),
-                          ),
-                          Container(
-                            height: 100,
-                            color: Colors.transparent,
-                            child: Center(
-                              child: _isUploading
-                                  ? const CircularProgressIndicator(
-                                      color: kMainColor,
-                                    )
-                                  : FloatingActionButton.large(
-                                      backgroundColor: kMainColor,
-                                      child: const Icon(
-                                        Icons.camera_alt,
-                                        size: 32,
-                                      ),
-                                      onPressed: () async {
-                                        if (_isUploading ||
-                                            !mounted ||
-                                            _isDisposed)
-                                          return;
-
-                                        try {
-                                          setState(() {
-                                            _isUploading = true;
-                                          });
-
-                                          // Display a loading indicator while we take the picture
-                                          toast('Mengambil foto...');
-
-                                          // Take the picture
-                                          final String imagePath =
-                                              await _takePicture();
-
-                                          // Upload attendance with image
-                                          await _uploadAttendance(imagePath);
-                                        } catch (e) {
-                                          // If an error occurs, log the error to the console.
-                                          print('Error: $e');
-                                          if (mounted && !_isDisposed) {
-                                            toast('Error: $e');
-                                            setState(() {
-                                              _isUploading = false;
-                                            });
-                                          }
-                                        }
-                                      },
-                                    ),
-                            ),
-                          ),
-                        ],
-                      );
-                    } else {
-                      // Otherwise, display a loading indicator
-                      return const Center(
-                        child: CircularProgressIndicator(color: kMainColor),
-                      );
-                    }
-                  },
-                ),
+                child: _buildCameraContent(),
               ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  // Separate the camera content building logic
+  Widget _buildCameraContent() {
+    if (_isDisposed) {
+      return const Center(child: Text('Camera disposed'));
+    }
+
+    return FutureBuilder<void>(
+      future: _initializeControllerFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.done &&
+            _isCameraReady &&
+            mounted &&
+            !_isDisposed &&
+            _isCameraInitialized &&
+            _controller != null &&
+            _controller!.value.isInitialized) {
+          // If the Future is complete, display the preview
+          return Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 8.0,
+                ),
+                child: Text(
+                  'Posisikan wajah Anda di dalam frame kamera',
+                  style: kTextStyle.copyWith(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              // Using Expanded to fill available space
+              Expanded(child: _buildCameraPreview()),
+              Container(
+                height: 100,
+                color: Colors.transparent,
+                child: Center(
+                  child: _isUploading
+                      ? const CircularProgressIndicator(color: kMainColor)
+                      : FloatingActionButton.large(
+                          backgroundColor: kMainColor,
+                          child: const Icon(Icons.camera_alt, size: 32),
+                          onPressed: _onCaptureButtonPressed,
+                        ),
+                ),
+              ),
+            ],
+          );
+        } else {
+          // Otherwise, display a loading indicator
+          return const Center(
+            child: CircularProgressIndicator(color: kMainColor),
+          );
+        }
+      },
+    );
+  }
+
+  Widget _buildCameraPreview() {
+    try {
+      if (_controller == null || 
+          !_isCameraInitialized ||
+          !_controller!.value.isInitialized ||
+          _isDisposed) {
+        return Container(
+          color: Colors.black,
+          child: const Center(
+            child: Text(
+              'Camera initializing...',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        );
+      }
+
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16),
+          child: CameraPreview(_controller!),
+        ),
+      );
+    } catch (e) {
+      print('Error building camera preview: $e');
+      return Container(
+        color: Colors.black,
+        child: Center(
+          child: Text(
+            'Camera error: $e',
+            style: const TextStyle(color: Colors.white),
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _onCaptureButtonPressed() async {
+    if (_isUploading || !mounted || _isDisposed || !_isCameraInitialized || _controller == null)
+      return;
+
+    try {
+      setState(() {
+        _isUploading = true;
+      });
+
+      // Display a loading indicator while we take the picture
+      toast('Mengambil foto...');
+
+      // Take the picture
+      final String imagePath = await _takePicture();
+
+      // Upload attendance with image
+      await _uploadAttendance(imagePath);
+    } catch (e) {
+      // If an error occurs, log the error to the console.
+      print('Error: $e');
+      if (mounted && !_isDisposed) {
+        toast('Error: $e');
+        setState(() {
+          _isUploading = false;
+        });
+      }
+    }
   }
 }
