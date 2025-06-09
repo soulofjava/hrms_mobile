@@ -1,11 +1,10 @@
-// ignore_for_file: library_private_types_in_public_api, use_super_parameters
+// ignore_for_file: library_private_types_in_public_api, use_super_parameters, curly_braces_in_flow_control_structures
 
 import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:hrms/Screens/Home/home_screen.dart';
 import 'package:hrms/constant.dart';
 import 'package:nb_utils/nb_utils.dart';
@@ -27,27 +26,12 @@ class _CameraScreenState extends State<CameraScreen> {
   late CameraController _controller;
   late Future<void> _initializeControllerFuture;
   bool _isCameraReady = false;
-  bool _isProcessingFrame = false;
-  bool _isFaceDetected = false;
   bool _isUploading = false;
-
-  // Face detector
-  late FaceDetector _faceDetector;
-
-  // Timer for periodic face detection
-  Timer? _timer;
+  bool _isDisposed = false;
 
   @override
   void initState() {
     super.initState();
-    // Initialize the face detector with options
-    final options = FaceDetectorOptions(
-      enableClassification: true,
-      enableTracking: true,
-      performanceMode: FaceDetectorMode.accurate,
-    );
-    _faceDetector = FaceDetector(options: options);
-
     // Initialize the front camera
     _initializeCamera(true);
   }
@@ -64,10 +48,10 @@ class _CameraScreenState extends State<CameraScreen> {
         orElse: () => widget.cameras.first,
       );
 
-      // Initialize the controller with high resolution
+      // Initialize the controller with medium resolution for better performance
       _controller = CameraController(
         camera,
-        ResolutionPreset.high,
+        ResolutionPreset.medium,
         enableAudio: false,
         imageFormatGroup: ImageFormatGroup.jpeg,
       );
@@ -76,14 +60,12 @@ class _CameraScreenState extends State<CameraScreen> {
       _initializeControllerFuture = _controller.initialize();
 
       // Only update the state if the widget is still mounted
-      if (mounted) {
+      if (mounted && !_isDisposed) {
         await _initializeControllerFuture;
-        if (mounted) {
+        if (mounted && !_isDisposed) {
           setState(() {
             _isCameraReady = true;
           });
-          // Start face detection timer
-          _startFaceDetection();
         }
       }
     } catch (e) {
@@ -105,107 +87,70 @@ class _CameraScreenState extends State<CameraScreen> {
     }
   }
 
-  // Start periodic face detection
-  void _startFaceDetection() {
-    _timer = Timer.periodic(const Duration(milliseconds: 1000), (timer) async {
-      if (_isCameraReady && !_isProcessingFrame && mounted) {
-        await _processCameraImage();
-      }
-    });
-  }
-
-  Future<void> _processCameraImage() async {
-    if (_isProcessingFrame || !mounted) return;
-
-    _isProcessingFrame = true;
-    try {
-      // Check if controller is initialized and not disposed
-      if (!_controller.value.isInitialized) {
-        print('CameraScreen: Camera controller not initialized');
-        _isProcessingFrame = false;
-        return;
-      }
-
-      // Capture a frame from the camera
-      final XFile imageFile = await _controller.takePicture();
-
-      // Process the image with face detector
-      final inputImage = InputImage.fromFilePath(imageFile.path);
-      final List<Face> faces = await _faceDetector.processImage(inputImage);
-
-      // Check if a face is detected and if the widget is still mounted
-      if (mounted) {
-        setState(() {
-          _isFaceDetected = faces.isNotEmpty;
-        });
-      }
-
-      // Delete the temporary image
-      File(imageFile.path).deleteSync();
-    } catch (e) {
-      print('CameraScreen Error processing camera image: $e');
-      // Don't update UI if widget is no longer mounted
-      if (!mounted) return;
-    } finally {
-      if (mounted) {
-        _isProcessingFrame = false;
-      }
-    }
-  }
-
   @override
   void dispose() {
     print("CameraScreen dispose called");
-    // Set a flag to prevent further processing
-    _isProcessingFrame = true;
-
-    // Stop the timer immediately
-    _timer?.cancel();
-    _timer = null;
+    _isDisposed = true;
 
     // Then dispose resources
-    _stopCameraAndCleanup();
+    // _stopCameraAndCleanup();
     super.dispose();
   }
 
   Future<String> _takePicture() async {
+    if (_isDisposed || !mounted) {
+      throw Exception('Camera not available');
+    }
+
     // Ensure the camera is initialized
     await _initializeControllerFuture;
 
-    // Get the directory for storing images
-    final Directory extDir = await getApplicationDocumentsDirectory();
-    final String dirPath = '${extDir.path}/Pictures/flutter_camera';
-    await Directory(dirPath).create(recursive: true);
+    // Check if controller is still initialized
+    if (!_controller.value.isInitialized) {
+      throw Exception('Camera is not initialized');
+    }
 
-    // Generate a unique file name
-    final String filePath =
-        '$dirPath/${DateTime.now().millisecondsSinceEpoch}.jpg';
+    try {
+      // Get the directory for storing images
+      final Directory extDir = await getApplicationDocumentsDirectory();
+      final String dirPath = '${extDir.path}/Pictures/flutter_camera';
+      await Directory(dirPath).create(recursive: true);
 
-    // Take the picture
-    final XFile image = await _controller.takePicture();
-    // Copy the image to our custom location
-    await File(image.path).copy(filePath);
+      // Generate a unique file name
+      final String filePath =
+          '$dirPath/${DateTime.now().millisecondsSinceEpoch}.jpg';
 
-    return filePath;
+      // Take the picture
+      final XFile image = await _controller.takePicture();
+
+      // Copy the image to our custom location
+      await File(image.path).copy(filePath);
+
+      // Try to delete the original file
+      try {
+        await File(image.path).delete();
+      } catch (e) {
+        print('Error deleting temporary file: $e');
+      }
+
+      return filePath;
+    } catch (e) {
+      print('CameraScreen Error taking picture: $e');
+      rethrow;
+    }
   }
 
   // Add this method to properly close the camera
   Future<void> _stopCameraAndCleanup() async {
     try {
-      // Cancel the timer first to prevent further processing
-      _timer?.cancel();
-      _timer = null;
-
-      // Close the face detector
-      await _faceDetector.close();
-
       // Only dispose if initialized and not already disposed
-      if (_controller.value.isInitialized) {
-        try {
+      try {
+        if (_controller.value.isInitialized) {
           await _controller.dispose();
-        } catch (e) {
-          print("CameraScreen Error disposing camera controller: $e");
+          print("CameraScreen Camera controller disposed successfully");
         }
+      } catch (e) {
+        print("CameraScreen Error disposing camera controller: $e");
       }
 
       print("CameraScreen Camera resources closed successfully");
@@ -331,10 +276,11 @@ class _CameraScreenState extends State<CameraScreen> {
           );
 
           // Properly close camera resources before navigating
-          await _stopCameraAndCleanup();
+          // await _stopCameraAndCleanup();
 
           if (context.mounted) {
             Future.delayed(Duration.zero, () {
+              _stopCameraAndCleanup();
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => const HomeScreen()),
@@ -363,7 +309,7 @@ class _CameraScreenState extends State<CameraScreen> {
                 );
 
                 // Close the camera and return to previous screen
-                _stopCameraAndCleanup();
+                // _stopCameraAndCleanup();
 
                 if (context.mounted) {
                   const HomeScreen().launch(context);
@@ -416,123 +362,99 @@ class _CameraScreenState extends State<CameraScreen> {
       );
       print('CameraScreen Exception during upload: $e');
     } finally {
-      setState(() {
-        _isUploading = false;
-      });
+      if (mounted && !_isDisposed) {
+        setState(() {
+          _isUploading = false;
+        });
+      }
     }
+    // Close the camera and return to previous screen
+    // _stopCameraAndCleanup();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          widget.status.isEmpty
-              ? 'Ambil Selfie untuk Pulang'
-              : 'Ambil Selfie untuk Masuk',
-          style: kTextStyle.copyWith(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
+    return WillPopScope(
+      onWillPop: () async {
+        // Clean up camera resources before popping
+        // await _stopCameraAndCleanup();
+        return true;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(
+            widget.status.isEmpty
+                ? 'Ambil Selfie untuk Pulang'
+                : 'Ambil Selfie untuk Masuk',
+            style: kTextStyle.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
           ),
+          backgroundColor: kMainColor,
+          iconTheme: const IconThemeData(color: Colors.white),
         ),
-        backgroundColor: kMainColor,
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
-      body: FutureBuilder<void>(
-        future: _initializeControllerFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done &&
-              _isCameraReady) {
-            // If the Future is complete, display the preview
-            return Stack(
-              children: [
-                Column(
-                  children: [
-                    // Using AspectRatio to maintain proper camera aspect ratio
-                    Expanded(
-                      child: AspectRatio(
-                        aspectRatio: _controller.value.aspectRatio,
-                        child: CameraPreview(_controller),
-                      ),
-                    ),
-                    Container(
-                      height: 100,
-                      color: Colors.black,
-                      child: Center(
-                        child: _isUploading
-                            ? const CircularProgressIndicator(
-                                color: Colors.white,
-                              )
-                            : FloatingActionButton(
-                                backgroundColor: _isFaceDetected
-                                    ? kMainColor
-                                    : Colors.grey,
-                                child: const Icon(Icons.camera_alt),
-                                onPressed: () async {
-                                  // Check if face is detected before allowing capture
-                                  if (!_isFaceDetected) {
-                                    toast(
-                                      'Wajah tidak terdeteksi. Posisikan wajah Anda dengan benar.',
-                                    );
-                                    return;
-                                  }
+        body: FutureBuilder<void>(
+          future: _initializeControllerFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.done &&
+                _isCameraReady &&
+                mounted &&
+                !_isDisposed &&
+                _controller.value.isInitialized) {
+              // If the Future is complete, display the preview
+              return Column(
+                children: [
+                  // Using Expanded instead of AspectRatio for better flexibility
+                  Expanded(child: CameraPreview(_controller)),
+                  Container(
+                    height: 100,
+                    color: Colors.black,
+                    child: Center(
+                      child: _isUploading
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : FloatingActionButton(
+                              backgroundColor: kMainColor,
+                              child: const Icon(Icons.camera_alt),
+                              onPressed: () async {
+                                if (_isUploading || !mounted || _isDisposed)
+                                  return;
 
-                                  try {
-                                    // Display a loading indicator while we take the picture
-                                    toast('Mengambil foto...');
+                                try {
+                                  setState(() {
+                                    _isUploading = true;
+                                  });
 
-                                    // Take the picture
-                                    final String imagePath =
-                                        await _takePicture();
+                                  // Display a loading indicator while we take the picture
+                                  toast('Mengambil foto...');
 
-                                    // Upload attendance with image
-                                    await _uploadAttendance(imagePath);
-                                  } catch (e) {
-                                    // If an error occurs, log the error to the console.
+                                  // Take the picture
+                                  final String imagePath = await _takePicture();
+
+                                  // Upload attendance with image
+                                  await _uploadAttendance(imagePath);
+                                } catch (e) {
+                                  // If an error occurs, log the error to the console.
+                                  print('Error: $e');
+                                  if (mounted && !_isDisposed) {
                                     toast('Error: $e');
+                                    setState(() {
+                                      _isUploading = false;
+                                    });
                                   }
-                                },
-                              ),
-                      ),
-                    ),
-                  ],
-                ),
-                // Face detection indicator overlay
-                Positioned(
-                  top: 20,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: _isFaceDetected
-                            ? Colors.green.withOpacity(0.7)
-                            : Colors.red.withOpacity(0.7),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        _isFaceDetected
-                            ? 'Wajah Terdeteksi'
-                            : 'Wajah Tidak Terdeteksi',
-                        style: kTextStyle.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                                }
+                              },
+                            ),
                     ),
                   ),
-                ),
-              ],
-            );
-          } else {
-            // Otherwise, display a loading indicator
-            return const Center(child: CircularProgressIndicator());
-          }
-        },
+                ],
+              );
+            } else {
+              // Otherwise, display a loading indicator
+              return const Center(child: CircularProgressIndicator());
+            }
+          },
+        ),
       ),
     );
   }
