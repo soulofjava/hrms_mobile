@@ -11,7 +11,8 @@ const kBgColor = Color(0xFFFAFAFA);
 const kHalfDay = Color(0xFFE8B500);
 const kGreenColor = Color(0xFF08BC85);
 
-const String apiBaseUrl = 'http://192.168.18.127:8000/api';
+// const String apiBaseUrl = 'http://192.168.18.127:8000/api';
+const String apiBaseUrl = 'https://staging-ewa.ti-asia.com/api';
 
 final kTextStyle = GoogleFonts.manrope(color: kTitleColor);
 String purchaseCode = '528cdb9a-5d37-4292-a2b5-b792d5eca03a';

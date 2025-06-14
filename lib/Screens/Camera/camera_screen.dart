@@ -1,4 +1,4 @@
-// ignore_for_file: library_private_types_in_public_api, use_super_parameters, curly_braces_in_flow_control_structures
+// ignore_for_file: library_private_types_in_public_api, use_super_parameters, curly_braces_in_flow_control_structures, sort_child_properties_last
 
 import 'dart:io';
 import 'dart:async';
